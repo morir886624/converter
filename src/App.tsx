@@ -155,57 +155,28 @@ export default function App() {
 
       {/* App tabs */}
       <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-4">
-        <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-fit">
-          <button
-            onClick={() => setTab('converter')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === 'converter'
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-            }`}
-          >
-            Converter
-          </button>
-          <button
-            onClick={() => setTab('pdf')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === 'pdf'
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-            }`}
-          >
-            PDF Tools
-          </button>
-          <button
-            onClick={() => setTab('image')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === 'image'
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-            }`}
-          >
-            Image Tools
-          </button>
-          <button
-            onClick={() => setTab('watermark')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === 'watermark'
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-            }`}
-          >
-            💧 Watermark
-          </button>
-          <button
-            onClick={() => setTab('favicon')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === 'favicon'
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-            }`}
-          >
-            🖼️ Favicon
-          </button>
+        {/* Mobile: 2 rows (3+2) via css-grid col-span trick; desktop: single flex row */}
+        <div className="grid grid-cols-6 sm:flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+          {([
+            { id: 'converter', icon: '🔄', label: 'Converter',   span: 'col-span-2' },
+            { id: 'pdf',       icon: '📄', label: 'PDF Tools',   span: 'col-span-2' },
+            { id: 'image',     icon: '✨', label: 'Image Tools', span: 'col-span-2' },
+            { id: 'watermark', icon: '💧', label: 'Watermark',   span: 'col-span-3' },
+            { id: 'favicon',   icon: '🖼️', label: 'Favicon',     span: 'col-span-3' },
+          ] as { id: AppTab; icon: string; label: string; span: string }[]).map(({ id, icon, label, span }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={`${span} sm:flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-2 sm:py-2 rounded-lg text-[11px] sm:text-sm font-medium transition-colors ${
+                tab === id
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
+            >
+              <span aria-hidden className="text-base leading-none">{icon}</span>
+              <span>{label}</span>
+            </button>
+          ))}
         </div>
       </div>
 
