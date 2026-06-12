@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#6366f1"/>
+  <g fill="white">
+    <!-- Arrow right (top) -->
+    <rect x="96" y="184" width="218" height="46" rx="8"/>
+    <polygon points="314,160 412,207 314,254"/>
+    <!-- Arrow left (bottom) -->
+    <rect x="198" y="282" width="218" height="46" rx="8"/>
+    <polygon points="198,258 100,305 198,352"/>
+  </g>
+</svg>

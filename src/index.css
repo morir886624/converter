@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    /* Prevent horizontal overflow on all screens */
+    overflow-x: hidden;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Better touch targets for native select/input on iOS */
+  select, input[type='range'] {
+    touch-action: manipulation;
+  }
+}
+
+@layer utilities {
+  .bg-checkerboard {
+    background-color: #ffffff;
+    background-image:
+      linear-gradient(45deg, #e2e8f0 25%, transparent 25%),
+      linear-gradient(-45deg, #e2e8f0 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #e2e8f0 75%),
+      linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+  }
+
+  .dark .bg-checkerboard {
+    background-color: #1e293b;
+    background-image:
+      linear-gradient(45deg, #334155 25%, transparent 25%),
+      linear-gradient(-45deg, #334155 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #334155 75%),
+      linear-gradient(-45deg, transparent 75%, #334155 75%);
+  }
+}
+
+@layer components {
+  /* ── Button primitives — mobile-first, min 44px touch target ── */
+  .btn-base {
+    @apply inline-flex items-center justify-center gap-1.5
+           min-h-[44px] px-4 py-2.5 rounded-xl
+           text-sm font-medium
+           transition-colors duration-150
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply btn-base
+           bg-brand-500 hover:bg-brand-600 active:bg-brand-700
+           text-white
+           focus-visible:ring-brand-500;
+  }
+
+  .btn-success {
+    @apply btn-base
+           bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700
+           text-white
+           focus-visible:ring-emerald-500;
+  }
+
+  .btn-ghost {
+    @apply btn-base
+           border border-slate-200 dark:border-slate-700
+           text-slate-600 dark:text-slate-300
+           hover:bg-slate-100 dark:hover:bg-slate-800
+           active:bg-slate-200 dark:active:bg-slate-700
+           focus-visible:ring-slate-400;
+  }
+
+  .btn-sm {
+    @apply btn-base min-h-[36px] sm:min-h-[44px] px-3 py-1.5 sm:py-2 text-sm;
+  }
+
+  /* ── Form controls ── */
+  .select-field {
+    @apply w-full text-sm border border-slate-200 dark:border-slate-600 rounded-lg
+           px-2.5 py-2 min-h-[40px]
+           bg-white dark:bg-slate-700
+           text-slate-800 dark:text-slate-100
+           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent;
+  }
+
+  .select-field-sm {
+    @apply text-xs border border-slate-200 dark:border-slate-600 rounded-lg
+           px-2 py-1.5 min-h-[36px]
+           bg-white dark:bg-slate-700
+           text-slate-800 dark:text-slate-100
+           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent;
+  }
+}
