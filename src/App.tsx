@@ -9,8 +9,9 @@ import { ProgressBar } from './components/ProgressBar';
 import { PdfTools } from './pdf-tools/PdfTools';
 import { ImageTools } from './image-tools/ImageTools';
 import { WatermarkTool } from './watermark/WatermarkTool';
+import { FaviconGenerator } from './favicon-generator/FaviconTool';
 
-type AppTab = 'converter' | 'pdf' | 'image' | 'watermark';
+type AppTab = 'converter' | 'pdf' | 'image' | 'watermark' | 'favicon';
 
 function GlobalProgress({ files }: { files: ReturnType<typeof useConversion>['files'] }) {
   const active = files.filter((f) => f.status === 'converting' || f.status === 'done');
@@ -192,7 +193,17 @@ export default function App() {
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
             }`}
           >
-            💧 Filigrane
+            💧 Watermark
+          </button>
+          <button
+            onClick={() => setTab('favicon')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === 'favicon'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+            }`}
+          >
+            🖼️ Favicon
           </button>
         </div>
       </div>
@@ -252,10 +263,10 @@ export default function App() {
                 </p>
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {[
-                    { icon: '🔒', title: 'EXIF & vie privée', desc: 'Détecte et supprime les métadonnées GPS de vos photos JPEG avant de les partager.' },
-                    { icon: '✨', title: 'Suppression de fond', desc: 'Retire l\'arrière-plan de n\'importe quelle image en un clic, sans compte.' },
-                    { icon: '🗜️', title: 'Compression intelligente', desc: 'Réduit le poids de vos images avec prévisualisation de la taille estimée.' },
-                    { icon: '📄', title: '40+ formats supportés', desc: 'Images, PDF, documents, données, audio, vidéo — tout dans le navigateur.' },
+                    { icon: '🔒', title: 'EXIF & privacy', desc: 'Detects and removes GPS metadata from your JPEG photos before sharing.' },
+                    { icon: '✨', title: 'Background removal', desc: 'Remove the background from any image in one click, no account needed.' },
+                    { icon: '🗜️', title: 'Smart compression', desc: 'Reduce image file size with a live estimated size preview.' },
+                    { icon: '📄', title: '40+ formats supported', desc: 'Images, PDF, documents, data, audio, video — all in the browser.' },
                   ].map(({ icon, title, desc }) => (
                     <div
                       key={title}
@@ -279,6 +290,11 @@ export default function App() {
         {tab === 'watermark' && (
           <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
             <WatermarkTool />
+          </div>
+        )}
+        {tab === 'favicon' && (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+            <FaviconGenerator />
           </div>
         )}
       </main>

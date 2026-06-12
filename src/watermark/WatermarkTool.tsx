@@ -208,7 +208,7 @@ export function WatermarkTool() {
       <div
         role="button"
         tabIndex={0}
-        aria-label="Déposer des fichiers ici"
+        aria-label="Drop files here"
         onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
         onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragOver(false); }}
         onDrop={(e) => { e.preventDefault(); setIsDragOver(false); addFiles(e.dataTransfer.files); }}
@@ -222,10 +222,10 @@ export function WatermarkTool() {
       >
         <span className="text-3xl" aria-hidden>💧</span>
         <p className="text-sm text-slate-600 dark:text-slate-400 text-center">
-          Déposer des images ou PDFs ici — ou{' '}
-          <span className="text-brand-600 dark:text-brand-400 font-medium">parcourir</span>
+          Drop images or PDFs here — or{' '}
+          <span className="text-brand-600 dark:text-brand-400 font-medium">browse</span>
         </p>
-        <p className="text-xs text-slate-400 dark:text-slate-500">JPG, PNG, WebP, PDF — plusieurs fichiers acceptés</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">JPG, PNG, WebP, PDF — multiple files accepted</p>
         <input
           ref={fileInputRef}
           type="file"
@@ -253,14 +253,14 @@ export function WatermarkTool() {
                 {formatBytes(wf.file.size)}
               </span>
               {wf.status === 'processing' && (
-                <span className="shrink-0 text-xs text-brand-500 animate-pulse">En cours…</span>
+                <span className="shrink-0 text-xs text-brand-500 animate-pulse">Processing…</span>
               )}
               {wf.status === 'done' && (
                 <button
                   onClick={() => downloadFile(wf)}
                   className="shrink-0 text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
                 >
-                  ⬇ Télécharger
+                  ⬇ Download
                 </button>
               )}
               {wf.status === 'error' && (
@@ -292,11 +292,11 @@ export function WatermarkTool() {
                 disabled={processing || files.length === 0}
                 className="btn-primary"
               >
-                {processing ? 'Application…' : `💧 Appliquer à tous les fichiers (${files.length})`}
+                {processing ? 'Applying…' : `💧 Apply to all files (${files.length})`}
               </button>
               {hasDone && (
                 <button onClick={downloadAll} className="btn-success">
-                  ⬇ Télécharger tout
+                  ⬇ Download all
                 </button>
               )}
               {!processing && (
@@ -304,7 +304,7 @@ export function WatermarkTool() {
                   onClick={() => setFiles([])}
                   className="btn-ghost text-sm"
                 >
-                  Vider
+                  Clear
                 </button>
               )}
             </div>
@@ -313,9 +313,9 @@ export function WatermarkTool() {
           {/* Live preview */}
           <div className="space-y-2">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
-              Aperçu en direct {previewBusy && <span className="animate-pulse">…</span>}
+              Live preview {previewBusy && <span className="animate-pulse">…</span>}
               {files.length > 1 && (
-                <span className="ml-1 normal-case font-normal">(premier fichier)</span>
+                <span className="ml-1 normal-case font-normal">(first file)</span>
               )}
             </p>
             <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-checkerboard min-h-[120px] flex items-center justify-center">
@@ -325,11 +325,11 @@ export function WatermarkTool() {
                 style={{ imageRendering: 'auto' }}
               />
               {files.length === 0 && (
-                <p className="text-xs text-slate-400 dark:text-slate-500">Aperçu disponible après ajout d'un fichier</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">Preview available once a file is added</p>
               )}
             </div>
             <p className="text-xs text-slate-400 dark:text-slate-500">
-              L'aperçu est une approximation — le résultat final est identique pour les images, légèrement différent pour les PDFs (polices standard).
+              The preview is an approximation — the final result is pixel-perfect for images, slightly different for PDFs (standard fonts).
             </p>
           </div>
         </div>

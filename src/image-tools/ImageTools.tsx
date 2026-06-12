@@ -10,7 +10,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'bg-removal', label: 'Remove background', icon: '✨' },
   { id: 'compress',   label: 'Compress',           icon: '🗜️' },
   { id: 'resize',     label: 'Resize',             icon: '↔️' },
-  { id: 'exif',       label: 'EXIF / Vie privée',  icon: '🔒' },
+  { id: 'exif',       label: 'EXIF / Privacy',      icon: '🔒' },
 ];
 
 export function ImageTools() {

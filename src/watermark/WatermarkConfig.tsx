@@ -43,7 +43,7 @@ export function WatermarkConfig({ opts, onChange, hasPdf }: Props) {
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
             }`}
           >
-            {t === 'text' ? '✏️ Texte' : '🖼️ Logo'}
+            {t === 'text' ? '✏️ Text' : '🖼️ Logo'}
           </button>
         ))}
       </div>
@@ -52,7 +52,7 @@ export function WatermarkConfig({ opts, onChange, hasPdf }: Props) {
         <div className="space-y-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-100 dark:border-slate-700">
           {/* Text input */}
           <div className={ROW}>
-            <span className={LBL}>Texte</span>
+            <span className={LBL}>Text</span>
             <input
               type="text"
               value={opts.text}
@@ -65,7 +65,7 @@ export function WatermarkConfig({ opts, onChange, hasPdf }: Props) {
 
           {/* Font */}
           <div className={ROW}>
-            <span className={LBL}>Police</span>
+            <span className={LBL}>Font</span>
             <select
               value={opts.fontFamily}
               onChange={(e) => set('fontFamily', e.target.value)}
@@ -81,7 +81,7 @@ export function WatermarkConfig({ opts, onChange, hasPdf }: Props) {
 
           {/* Font size */}
           <div className={ROW}>
-            <span className={LBL}>Taille (px)</span>
+            <span className={LBL}>Size (px)</span>
             <input
               type="range" min={10} max={200} step={2}
               value={opts.fontSize}
@@ -95,7 +95,7 @@ export function WatermarkConfig({ opts, onChange, hasPdf }: Props) {
 
           {/* Color */}
           <div className={ROW}>
-            <span className={LBL}>Couleur</span>
+            <span className={LBL}>Color</span>
             <div className="flex items-center gap-2">
               <input
                 type="color"
@@ -117,7 +117,7 @@ export function WatermarkConfig({ opts, onChange, hasPdf }: Props) {
                 onClick={() => logoInputRef.current?.click()}
                 className="btn-ghost text-xs px-3 py-1.5"
               >
-                {opts.logoFile ? opts.logoFile.name : '📂 Choisir une image'}
+                {opts.logoFile ? opts.logoFile.name : '📂 Choose an image'}
               </button>
               {opts.logoFile && (
                 <button
@@ -143,7 +143,7 @@ export function WatermarkConfig({ opts, onChange, hasPdf }: Props) {
 
           {/* Logo size */}
           <div className={ROW}>
-            <span className={LBL}>Taille (%)</span>
+            <span className={LBL}>Size (%)</span>
             <input
               type="range" min={2} max={60} step={1}
               value={opts.sizePercent}
@@ -161,7 +161,7 @@ export function WatermarkConfig({ opts, onChange, hasPdf }: Props) {
       <div className="space-y-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-100 dark:border-slate-700">
         {/* Opacity */}
         <div className={ROW}>
-          <span className={LBL}>Opacité</span>
+          <span className={LBL}>Opacity</span>
           <input
             type="range" min={5} max={100} step={5}
             value={opts.opacity}
@@ -189,7 +189,7 @@ export function WatermarkConfig({ opts, onChange, hasPdf }: Props) {
 
         {/* Tile toggle */}
         <label className={`${ROW} cursor-pointer select-none`}>
-          <span className={LBL}>Mosaïque</span>
+          <span className={LBL}>Tile</span>
           <button
             type="button"
             role="switch"
@@ -206,7 +206,7 @@ export function WatermarkConfig({ opts, onChange, hasPdf }: Props) {
             />
           </button>
           <span className="text-xs text-slate-500 dark:text-slate-400">
-            {opts.tile ? 'Répétition activée' : 'Position unique'}
+            {opts.tile ? 'Repeat enabled' : 'Single position'}
           </span>
         </label>
 
@@ -238,7 +238,7 @@ export function WatermarkConfig({ opts, onChange, hasPdf }: Props) {
       {hasPdf && (
         <div className="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-100 dark:border-slate-700">
           <div className={ROW}>
-            <span className={LBL}>Pages PDF</span>
+            <span className={LBL}>PDF pages</span>
             <input
               type="text"
               value={opts.pageRange ?? 'all'}
@@ -248,7 +248,7 @@ export function WatermarkConfig({ opts, onChange, hasPdf }: Props) {
             />
           </div>
           <p className="text-xs text-slate-400 dark:text-slate-500 pl-[6.5rem]">
-            Exemples : <code>all</code> · <code>1-3</code> · <code>1, 3, 5-8</code>
+            Examples: <code>all</code> · <code>1-3</code> · <code>1, 3, 5-8</code>
           </p>
         </div>
       )}
