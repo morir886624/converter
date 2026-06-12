@@ -1,7 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { WatermarkConfig } from './WatermarkConfig';
+
+let _pdfjs: typeof import('pdfjs-dist') | null = null;
+async function getPdfjs() {
+  if (!_pdfjs) {
+    _pdfjs = await import('pdfjs-dist');
+    _pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+  }
+  return _pdfjs;
+}
 import { drawWatermarkOnCanvas } from './imageWatermark';
 import { convert as convertImage } from './imageWatermark';
 import { convert as convertPdf } from './pdfWatermark';
@@ -9,10 +17,6 @@ import { DEFAULT_WATERMARK_OPTIONS } from './types';
 import type { WatermarkOptions, WatermarkFile } from './types';
 import { downloadBlob, formatBytes } from '../utils/download';
 import { ProgressBar } from '../components/ProgressBar';
-
-if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
-}
 
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/bmp']);
 
@@ -40,6 +44,7 @@ function loadImg(src: string): Promise<HTMLImageElement> {
 }
 
 async function renderFirstPage(file: File, maxW = 700): Promise<HTMLCanvasElement> {
+  const pdfjsLib = await getPdfjs();
   const buf = await file.arrayBuffer();
   const doc = await pdfjsLib.getDocument({ data: buf }).promise;
   const page = await doc.getPage(1);

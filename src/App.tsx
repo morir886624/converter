@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useTheme } from './hooks/useTheme';
 import { useConversion } from './hooks/useConversion';
 import { usePwa } from './hooks/usePwa';
@@ -6,10 +6,11 @@ import { DropZone } from './components/DropZone';
 import { FileCard } from './components/FileCard';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ProgressBar } from './components/ProgressBar';
-import { PdfTools } from './pdf-tools/PdfTools';
-import { ImageTools } from './image-tools/ImageTools';
-import { WatermarkTool } from './watermark/WatermarkTool';
-import { FaviconGenerator } from './favicon-generator/FaviconTool';
+
+const PdfTools = lazy(() => import('./pdf-tools/PdfTools').then((m) => ({ default: m.PdfTools })));
+const ImageTools = lazy(() => import('./image-tools/ImageTools').then((m) => ({ default: m.ImageTools })));
+const WatermarkTool = lazy(() => import('./watermark/WatermarkTool').then((m) => ({ default: m.WatermarkTool })));
+const FaviconGenerator = lazy(() => import('./favicon-generator/FaviconTool').then((m) => ({ default: m.FaviconGenerator })));
 
 type AppTab = 'converter' | 'pdf' | 'image' | 'watermark' | 'favicon';
 
@@ -285,18 +286,20 @@ export default function App() {
           </>
         )}
 
-        {tab === 'pdf' && <PdfTools />}
-        {tab === 'image' && <ImageTools />}
-        {tab === 'watermark' && (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
-            <WatermarkTool />
-          </div>
-        )}
-        {tab === 'favicon' && (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
-            <FaviconGenerator />
-          </div>
-        )}
+        <Suspense fallback={<div className="flex items-center justify-center py-16 text-slate-400 text-sm">Loading…</div>}>
+          {tab === 'pdf' && <PdfTools />}
+          {tab === 'image' && <ImageTools />}
+          {tab === 'watermark' && (
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+              <WatermarkTool />
+            </div>
+          )}
+          {tab === 'favicon' && (
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+              <FaviconGenerator />
+            </div>
+          )}
+        </Suspense>
       </main>
 
       <footer className="text-center text-xs text-slate-400 dark:text-slate-600 py-6 px-4">

@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['icon.svg', 'ffmpeg/**'],
       manifest: {
-        name: 'Convertisseur de fichiers',
-        short_name: 'Convertisseur',
-        description: 'Convertissez vos fichiers directement dans le navigateur — 100 % privé.',
+        name: 'File Converter',
+        short_name: 'Converter',
+        description: 'Convert your files directly in the browser — 100% private.',
         theme_color: '#6366f1',
         background_color: '#f8fafc',
         display: 'standalone',

@@ -1,8 +1,14 @@
 import type { ConversionOptions, ConverterPlugin } from '../types';
-import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+let _pdfjs: typeof import('pdfjs-dist') | null = null;
+async function getPdfjs() {
+  if (!_pdfjs) {
+    _pdfjs = await import('pdfjs-dist');
+    _pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+  }
+  return _pdfjs;
+}
 
 const MIME: Record<string, string> = {
   jpg: 'image/jpeg', jpeg: 'image/jpeg',
@@ -112,6 +118,7 @@ async function pdfToImages(
   quality: number,
   onProgress?: (pct: number) => void,
 ): Promise<Blob> {
+  const pdfjsLib = await getPdfjs();
   const buf = await file.arrayBuffer();
   const doc = await pdfjsLib.getDocument({ data: buf }).promise;
   const n = doc.numPages;
