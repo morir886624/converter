@@ -38,7 +38,7 @@ function mapPct(status: string, progress: number): number {
 // Tesseract.js processes images in its own built-in Web Worker;
 // calling recognize() here only awaits a Promise — the main thread is never blocked.
 export async function recognizeImage(
-  file: File,
+  file: File | Blob,
   lang: OcrLangCode,
   onProgress: (p: OcrProgress) => void,
 ): Promise<OcrResult> {
@@ -54,5 +54,63 @@ export async function recognizeImage(
   return {
     text: result.data.text.trim(),
     confidence: Math.round(result.data.confidence),
+  };
+}
+
+// Render a PDF page to a PNG Blob via pdfjs-dist
+async function pdfPageToBlob(
+  pdf: Awaited<ReturnType<typeof import('pdfjs-dist')['getDocument']>['promise']>,
+  pageNum: number,
+  scale = 2,
+): Promise<Blob> {
+  const page = await pdf.getPage(pageNum);
+  const viewport = page.getViewport({ scale });
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  const ctx = canvas.getContext('2d')!;
+  await page.render({ canvasContext: ctx as CanvasRenderingContext2D, viewport }).promise;
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Canvas toBlob failed')), 'image/png');
+  });
+}
+
+// OCR a multi-page PDF: rasterize each page then recognize text on it
+export async function recognizePdf(
+  file: File,
+  lang: OcrLangCode,
+  onProgress: (p: OcrProgress) => void,
+): Promise<OcrResult> {
+  const pdfjsLib = await import('pdfjs-dist');
+  const pdfWorkerUrl = (await import('pdfjs-dist/build/pdf.worker.min.mjs?url')).default;
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const numPages = pdf.numPages;
+
+  const pageTexts: string[] = [];
+  let totalConfidence = 0;
+
+  for (let i = 1; i <= numPages; i++) {
+    onProgress({
+      pct: Math.round(((i - 1) / numPages) * 95),
+      status: `Page ${i} / ${numPages} — rastérisation…`,
+    });
+    const blob = await pdfPageToBlob(pdf, i);
+    const pageResult = await recognizeImage(blob, lang, ({ pct, status }) => {
+      const globalPct = Math.round(((i - 1 + pct / 100) / numPages) * 95);
+      onProgress({ pct: globalPct, status: `Page ${i} / ${numPages} — ${status.toLowerCase()}` });
+    });
+    pageTexts.push(numPages > 1 ? `--- Page ${i} ---\n${pageResult.text}` : pageResult.text);
+    totalConfidence += pageResult.confidence;
+  }
+
+  onProgress({ pct: 100, status: 'Terminé' });
+  return {
+    text: pageTexts.join('\n\n'),
+    confidence: Math.round(totalConfidence / numPages),
   };
 }

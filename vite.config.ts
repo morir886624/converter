@@ -8,12 +8,21 @@ function sitemapPlugin() {
   return {
     name: 'generate-sitemap',
     closeBundle() {
-      const paths = ['/', '/app', ...conversions.map((c) => `/${c.slug}`)];
       const now = new Date().toISOString().split('T')[0];
-      const urls = paths
+      type Entry = { path: string; priority: string; changefreq: string };
+      const entries: Entry[] = [
+        { path: '/',    priority: '1.0', changefreq: 'weekly'  },
+        { path: '/app', priority: '0.9', changefreq: 'weekly'  },
+        ...conversions.map((c) => ({
+          path: `/${c.slug}`,
+          priority: '0.8',
+          changefreq: 'monthly',
+        })),
+      ];
+      const urls = entries
         .map(
-          (p) =>
-            `  <url>\n    <loc>${DOMAIN}${p}</loc>\n    <lastmod>${now}</lastmod>\n  </url>`,
+          ({ path, priority, changefreq }) =>
+            `  <url>\n    <loc>${DOMAIN}${path}</loc>\n    <lastmod>${now}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`,
         )
         .join('\n');
       const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;

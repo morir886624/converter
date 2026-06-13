@@ -8,8 +8,8 @@ import { BatchRenamePanel } from './BatchRenamePanel';
 import { DEFAULT_PATTERN } from '../utils/filenamePattern';
 
 function GlobalProgress({ files }: { files: ReturnType<typeof useConversion>['files'] }) {
-  const active = files.filter((f) => f.status === 'converting' || f.status === 'done');
-  const done = files.filter((f) => f.status === 'done');
+  const active = files.filter((f) => f.status === 'converting' || f.status === 'done' || f.status === 'cancelled');
+  const done = files.filter((f) => f.status === 'done' || f.status === 'cancelled');
   if (active.length === 0) return null;
   const pct = (done.length / active.length) * 100;
   return (
@@ -36,6 +36,7 @@ export function ConverterTab({ preferredFormat, onHashFile }: Props) {
     files,
     addFiles,
     removeFile,
+    cancelFile,
     convertFile,
     convertAll,
     downloadFile,
@@ -89,7 +90,7 @@ export function ConverterTab({ preferredFormat, onHashFile }: Props) {
 
   const hasFiles = files.length > 0;
   const hasDone = doneFiles.length > 0;
-  const hasIdle = files.some((f) => f.status === 'idle' && f.targetFormat);
+  const hasIdle = files.some((f) => (f.status === 'idle' || f.status === 'cancelled') && f.targetFormat);
 
   return (
     <>
@@ -134,6 +135,7 @@ export function ConverterTab({ preferredFormat, onHashFile }: Props) {
                 item={item}
                 onRemove={removeFile}
                 onConvert={convertFile}
+                onCancel={cancelFile}
                 onDownload={handleDownloadFile}
                 onFormatChange={setTargetFormat}
                 onOptionsChange={setOptions}

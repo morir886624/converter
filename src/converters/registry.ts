@@ -59,6 +59,7 @@ export async function convert(
   targetFormat: string,
   options: ConversionOptions,
   onProgress?: (pct: number) => void,
+  signal?: AbortSignal,
 ): Promise<Blob> {
   const ext = extension.toLowerCase();
   for (const c of STATIC_CONVERTERS) {
@@ -66,12 +67,12 @@ export async function convert(
     const f = c.outputFormats(ext);
     const formats = Array.isArray(f) ? f : await f;
     if (formats.includes(targetFormat)) {
-      return c.convert(file, targetFormat, options, onProgress);
+      return c.convert(file, targetFormat, options, onProgress, signal);
     }
   }
   const ffmpeg = await getFFmpegConverter();
   if (ffmpeg?.inputFormats.includes(ext)) {
-    return ffmpeg.convert(file, targetFormat, options, onProgress);
+    return ffmpeg.convert(file, targetFormat, options, onProgress, signal);
   }
   throw new Error(`Aucun convertisseur disponible pour .${ext} → .${targetFormat}`);
 }

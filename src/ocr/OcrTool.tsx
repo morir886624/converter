@@ -1,10 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { ProgressBar } from '../components/ProgressBar';
 import { downloadBlob } from '../utils/download';
-import { recognizeImage, OCR_LANGUAGES, type OcrLangCode, type OcrResult } from './ocr-engine';
+import { recognizeImage, recognizePdf, OCR_LANGUAGES, type OcrLangCode, type OcrResult } from './ocr-engine';
 
 const CONFIDENCE_WARN = 40;
-const ACCEPT = 'image/*,.heic,.heif';
+const ACCEPT = 'image/*,.heic,.heif,.pdf';
 
 // ── Image drop zone ────────────────────────────────────────────────────────────
 
@@ -18,7 +18,8 @@ function ImageDropZone({ onFile, file }: { onFile: (f: File) => void; file: File
     const f = list?.[0];
     if (!f) return;
     if (urlRef.current) URL.revokeObjectURL(urlRef.current);
-    const url = URL.createObjectURL(f);
+    const isPdf = f.name.toLowerCase().endsWith('.pdf') || f.type === 'application/pdf';
+    const url = isPdf ? null : URL.createObjectURL(f);
     urlRef.current = url;
     setPreview(url);
     onFile(f);
@@ -39,9 +40,12 @@ function ImageDropZone({ onFile, file }: { onFile: (f: File) => void; file: File
       }`}
     >
       <input ref={inputRef} type="file" accept={ACCEPT} className="hidden" onChange={(e) => pick(e.target.files)} />
-      {preview && file ? (
+      {file ? (
         <div className="p-3 flex items-center gap-3">
-          <img src={preview} alt="" aria-hidden className="h-16 w-24 object-cover rounded-lg shrink-0 border border-slate-100 dark:border-slate-700" />
+          {preview
+            ? <img src={preview} alt="" aria-hidden className="h-16 w-24 object-cover rounded-lg shrink-0 border border-slate-100 dark:border-slate-700" />
+            : <span className="text-4xl shrink-0 w-24 flex items-center justify-center" aria-hidden>📄</span>
+          }
           <div className="min-w-0">
             <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{file.name}</p>
             <p className="text-xs text-brand-500 dark:text-brand-400 mt-0.5">Cliquer ou déposer pour changer</p>
@@ -106,12 +110,15 @@ export function OcrTool() {
     setStatusLabel('');
 
     if (resultPreviewRef.current) URL.revokeObjectURL(resultPreviewRef.current);
-    const url = URL.createObjectURL(file);
+    const isPdf = file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf';
+    const url = isPdf ? null : URL.createObjectURL(file);
     resultPreviewRef.current = url;
     setResultPreview(url);
 
     try {
-      const r = await recognizeImage(file, lang, ({ pct, status }) => {
+      const isPdf = file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf';
+      const recognize = isPdf ? recognizePdf : recognizeImage;
+      const r = await recognize(file, lang, ({ pct, status }) => {
         setProgress(pct);
         setStatusLabel(status);
       });

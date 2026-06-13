@@ -88,6 +88,7 @@ interface Props {
   item: FileItem;
   onRemove: (id: string) => void;
   onConvert: (id: string) => void;
+  onCancel?: (id: string) => void;
   onDownload: (id: string) => void;
   onFormatChange: (id: string, fmt: string) => void;
   onOptionsChange: (id: string, opts: Partial<ConversionOptions>) => void;
@@ -137,6 +138,10 @@ const STATUS_MAP = {
   error: {
     label: '✗ Error',
     cls: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
+  },
+  cancelled: {
+    label: '— Annulé',
+    cls: 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400',
   },
 } as const;
 
@@ -197,12 +202,13 @@ function ZipPreview({ blob }: { blob: Blob }) {
 }
 
 export function FileCard({
-  item, onRemove, onConvert, onDownload, onFormatChange, onOptionsChange, onCleanExif, onTrimCopy, onHashFile,
+  item, onRemove, onConvert, onCancel, onDownload, onFormatChange, onOptionsChange, onCleanExif, onTrimCopy, onHashFile,
 }: Props) {
   const isZipExtract = item.targetFormat === 'extract';
-  const canConvert = item.status === 'idle' && item.targetFormat !== null;
+  const canConvert = (item.status === 'idle' || item.status === 'cancelled') && item.targetFormat !== null;
   const canDownload = item.status === 'done' && item.result !== null && !isZipExtract;
   const isBig = (item.category === 'video' || item.category === 'audio') && item.size > 150 * 1024 * 1024;
+  const isVeryLarge = item.size > 500 * 1024 * 1024;
 
   return (
     <article className="
@@ -328,8 +334,13 @@ export function FileCard({
         </button>
       </div>
 
-      {/* ── RAM warning ── */}
-      {isBig && (
+      {/* ── Size warnings ── */}
+      {isVeryLarge && (
+        <p className="mt-2.5 text-xs text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2 border border-red-100 dark:border-red-800/30">
+          ⚠ Fichier très volumineux ({formatBytes(item.size)}) — la conversion peut échouer par manque de mémoire dans le navigateur.
+        </p>
+      )}
+      {!isVeryLarge && isBig && (
         <p className="mt-2.5 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg px-3 py-2 border border-amber-100 dark:border-amber-800/30">
           ⚠ Large file ({formatBytes(item.size)}) — ffmpeg.wasm may use a lot of RAM.
         </p>
@@ -339,7 +350,17 @@ export function FileCard({
       {item.status === 'converting' && (
         <div className="mt-3 space-y-1">
           <ProgressBar value={item.progress} />
-          <p className="text-right text-xs text-slate-400 dark:text-slate-500">{item.progress}%</p>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-400 dark:text-slate-500">{item.progress}%</span>
+            {onCancel && (
+              <button
+                onClick={() => onCancel(item.id)}
+                className="text-xs text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+              >
+                ✕ Annuler
+              </button>
+            )}
+          </div>
         </div>
       )}
 

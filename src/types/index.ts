@@ -1,6 +1,24 @@
 export type FileCategory = 'image' | 'audio' | 'video' | 'document' | 'data' | 'archive' | 'unknown';
 
-export type ConversionStatus = 'idle' | 'converting' | 'done' | 'error';
+// All formats the converter registry can accept as input or produce as output.
+// Kept here as a single source of truth so conversions.config.ts catches typos at compile time.
+export type KnownInputFormat =
+  | 'jpg' | 'jpeg' | 'png' | 'webp' | 'avif' | 'bmp' | 'gif' | 'tiff' | 'tif'
+  | 'heic' | 'heif'
+  | 'mp3' | 'wav' | 'ogg' | 'aac' | 'flac' | 'm4a'
+  | 'mp4' | 'webm' | 'avi' | 'mov' | 'mkv'
+  | 'pdf' | 'docx' | 'md' | 'html'
+  | 'csv' | 'json' | 'yaml' | 'xml' | 'xlsx'
+  | 'zip';
+
+export type KnownOutputFormat =
+  | 'jpg' | 'jpeg' | 'png' | 'webp' | 'avif' | 'bmp' | 'gif'
+  | 'mp3' | 'wav' | 'ogg' | 'aac'
+  | 'mp4' | 'webm'
+  | 'pdf' | 'txt' | 'md' | 'html'
+  | 'csv' | 'json' | 'yaml' | 'xml' | 'xlsx';
+
+export type ConversionStatus = 'idle' | 'converting' | 'done' | 'error' | 'cancelled';
 
 export interface ConversionOptions {
   quality?: number;    // 1-100, images
@@ -59,5 +77,6 @@ export interface ConverterPlugin {
     targetFormat: string,
     options: ConversionOptions,
     onProgress?: (pct: number) => void,
+    signal?: AbortSignal,
   ) => Promise<Blob>;
 }

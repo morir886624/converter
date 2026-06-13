@@ -1,3 +1,5 @@
+import type { KnownInputFormat, KnownOutputFormat } from './types';
+
 export type ConversionCategory = 'image' | 'audio' | 'video' | 'document' | 'data' | 'archive';
 
 export interface FaqItem {
@@ -7,8 +9,8 @@ export interface FaqItem {
 
 export interface ConversionDef {
   slug: string;
-  from: string;
-  to: string;
+  from: KnownInputFormat;
+  to: KnownOutputFormat;
   category: ConversionCategory;
   title: string;
   description: string;

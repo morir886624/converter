@@ -1,4 +1,6 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
+import { Head } from 'vite-react-ssg';
+import { DOMAIN } from '../conversions.config';
 import { ConverterTab } from '../components/ConverterTab';
 
 const PdfTools = lazy(() => import('../pdf-tools/PdfTools').then((m) => ({ default: m.PdfTools })));
@@ -31,6 +33,14 @@ export function FullAppPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-4">
+      <Head>
+        <title>Convertisseur de fichiers complet — File Converter</title>
+        <meta
+          name="description"
+          content="Convertissez images, PDF, audio, vidéo et données directement dans votre navigateur. OCR, outils PDF, suppression de fond, watermark — 100 % local, aucun fichier envoyé."
+        />
+        <link rel="canonical" href={DOMAIN + '/app'} />
+      </Head>
 
       {/* Tab bar — scrollable on mobile, flex row on sm+ */}
       <div className="pt-4">

@@ -113,6 +113,7 @@ export const ffmpegConverter: ConverterPlugin = {
     targetFormat: string,
     options: ConversionOptions,
     onProgress?: (pct: number) => void,
+    signal?: AbortSignal,
   ): Promise<Blob> => {
     const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
     const sizeMb = file.size / (1024 * 1024);
@@ -146,7 +147,36 @@ export const ffmpegConverter: ConverterPlugin = {
         : buildVideoArgs(ext, targetFormat, options);
     }
 
-    await ff.exec(args);
+    try {
+      // Race against abort signal: if signal fires, terminate the worker immediately
+      const abortPromise = signal
+        ? new Promise<never>((_, reject) => {
+            signal.addEventListener('abort', () => {
+              _ffmpeg?.terminate();
+              _ffmpeg = null;
+              _loading = null;
+              reject(new DOMException('Conversion annulée', 'AbortError'));
+            }, { once: true });
+          })
+        : null;
+      await (abortPromise ? Promise.race([ff.exec(args), abortPromise]) : ff.exec(args));
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') throw err;
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('No such file') || msg.includes('Invalid data') || msg.includes('moov atom')) {
+        throw new Error('Fichier invalide ou corrompu — impossible de lire le fichier source.');
+      }
+      if (msg.includes('Encoder') || msg.includes('codec') || msg.includes('Unknown encoder')) {
+        throw new Error('Format de sortie non supporté par ce navigateur. Essayez MP4 ou MP3.');
+      }
+      if (msg.includes('Out of memory') || msg.includes('Cannot allocate')) {
+        throw new Error('Mémoire insuffisante. Fermez d\'autres onglets ou essayez un fichier plus petit.');
+      }
+      if (msg.includes('Permission denied') || msg.includes('Operation not permitted')) {
+        throw new Error('Erreur d\'accès au fichier. Rechargez la page et réessayez.');
+      }
+      throw new Error(`Échec de la conversion : ${msg.split('\n')[0]}`);
+    }
     onProgress?.(95);
 
     const data = await ff.readFile(outputName);

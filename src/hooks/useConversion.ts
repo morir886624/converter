@@ -30,6 +30,8 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
   const [files, setFilesState] = useState<FileItem[]>([]);
   // Keep a ref in sync so async callbacks always read fresh state
   const filesRef = useRef<FileItem[]>([]);
+  // Map of active AbortControllers keyed by file id
+  const abortMap = useRef<Map<string, AbortController>>(new Map());
 
   // Stable refs for history callbacks — updated each render, never in deps
   const onSuccessRef = useRef<SuccessCb | undefined>(undefined);
@@ -86,6 +88,18 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
     });
   }, [setFiles]);
 
+  const cancelFile = useCallback((id: string) => {
+    abortMap.current.get(id)?.abort();
+    abortMap.current.delete(id);
+    setFiles((prev) =>
+      prev.map((f) =>
+        f.id === id && f.status === 'converting'
+          ? { ...f, status: 'cancelled' as const, progress: 0, error: null }
+          : f,
+      ),
+    );
+  }, [setFiles]);
+
   const convertFile = useCallback(async (id: string) => {
     // Mark as converting first
     setFiles((prev) =>
@@ -104,11 +118,15 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
     const outputFileName = replaceExtension(file.name, targetFormat);
     const recordable = targetFormat !== 'extract';
 
+    const ctrl = new AbortController();
+    abortMap.current.set(id, ctrl);
+
     trackConversionStarted(extension, targetFormat);
     try {
       const result = await convert(
         file, extension, targetFormat, options,
         (pct) => setFiles((prev) => prev.map((f) => f.id === id ? { ...f, progress: pct } : f)),
+        ctrl.signal,
       );
       const resultPreviewUrl =
         (detectFile(file).category === 'image' && targetFormat !== 'pdf') ||
@@ -123,6 +141,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
       trackConversionSuccess(extension, targetFormat);
       if (recordable) onSuccessRef.current?.(file, extension, targetFormat, outputFileName, category, result);
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return; // already handled by cancelFile
       const errMsg = err instanceof Error ? err.message : 'Unknown error';
       setFiles((prev) =>
         prev.map((f) =>
@@ -133,6 +152,8 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
       );
       trackConversionError(extension, targetFormat);
       if (recordable) onFailureRef.current?.(file, extension, targetFormat, outputFileName, category, errMsg);
+    } finally {
+      abortMap.current.delete(id);
     }
   }, [setFiles]);
 
@@ -292,6 +313,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
     files,
     addFiles,
     removeFile,
+    cancelFile,
     convertFile,
     convertAll,
     downloadFile,
