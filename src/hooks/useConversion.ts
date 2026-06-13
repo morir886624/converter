@@ -3,6 +3,7 @@ import type { FileItem, ConversionOptions, FileCategory } from '../types';
 import { detectFile } from '../utils/fileDetection';
 import { getOutputFormats, convert } from '../converters/registry';
 import { downloadBlob, replaceExtension } from '../utils/download';
+import { applyFilenamePattern, getBaseName, getOutputExt, todayIso } from '../utils/filenamePattern';
 
 type SuccessCb = (
   file: File, inputExt: string, outputFormat: string,
@@ -136,25 +137,42 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
     await Promise.all(pending.map((f) => convertFile(f.id)));
   }, [convertFile]);
 
-  const downloadFile = useCallback((id: string) => {
+  const downloadFile = useCallback((id: string, pattern?: string, index?: number) => {
     const item = filesRef.current.find((f) => f.id === id);
     if (!item?.result || !item.targetFormat) return;
-    downloadBlob(item.result, replaceExtension(item.name, item.targetFormat));
+    if (!pattern) {
+      downloadBlob(item.result, replaceExtension(item.name, item.targetFormat));
+      return;
+    }
+    const filename = applyFilenamePattern(pattern, {
+      n: index ?? 1,
+      name: getBaseName(item.name),
+      ext: getOutputExt(item.targetFormat, item.name),
+      date: todayIso(),
+    });
+    downloadBlob(item.result, filename);
   }, []);
 
-  const downloadAll = useCallback(async () => {
+  const downloadAll = useCallback(async (pattern?: string) => {
     const done = filesRef.current.filter((f) => f.status === 'done' && f.result);
     if (done.length === 0) return;
+    const getName = (f: FileItem, n: number) => {
+      if (!pattern) return replaceExtension(f.name, f.targetFormat!);
+      return applyFilenamePattern(pattern, {
+        n,
+        name: getBaseName(f.name),
+        ext: getOutputExt(f.targetFormat!, f.name),
+        date: todayIso(),
+      });
+    };
     if (done.length === 1) {
       const f = done[0];
-      downloadBlob(f.result!, replaceExtension(f.name, f.targetFormat!));
+      downloadBlob(f.result!, getName(f, 1));
       return;
     }
     const JSZip = (await import('jszip')).default;
     const zip = new JSZip();
-    for (const f of done) {
-      zip.file(replaceExtension(f.name, f.targetFormat!), f.result!);
-    }
+    done.forEach((f, i) => zip.file(getName(f, i + 1), f.result!));
     const blob = await zip.generateAsync({ type: 'blob' });
     downloadBlob(blob, 'conversions.zip');
   }, []);

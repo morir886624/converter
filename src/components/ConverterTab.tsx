@@ -1,9 +1,11 @@
-import { useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useConversion } from '../hooks/useConversion';
 import { useHistoryContext } from '../contexts/HistoryContext';
 import { DropZone } from './DropZone';
 import { FileCard } from './FileCard';
 import { ProgressBar } from './ProgressBar';
+import { BatchRenamePanel } from './BatchRenamePanel';
+import { DEFAULT_PATTERN } from '../utils/filenamePattern';
 
 function GlobalProgress({ files }: { files: ReturnType<typeof useConversion>['files'] }) {
   const active = files.filter((f) => f.status === 'converting' || f.status === 'done');
@@ -28,6 +30,7 @@ interface Props {
 
 export function ConverterTab({ preferredFormat, onHashFile }: Props) {
   const { addSuccess, addFailure } = useHistoryContext();
+  const [filePattern, setFilePattern] = useState(DEFAULT_PATTERN);
 
   const {
     files,
@@ -72,8 +75,20 @@ export function ConverterTab({ preferredFormat, onHashFile }: Props) {
     return () => window.removeEventListener('paste', onPaste);
   }, [handleFilesAdded]);
 
+  // Wrap downloadFile to inject current pattern + sequential index among done files
+  const doneFiles = useMemo(() => files.filter((f) => f.status === 'done' && f.result), [files]);
+
+  const handleDownloadFile = useCallback((id: string) => {
+    const index = doneFiles.findIndex((f) => f.id === id) + 1;
+    downloadFile(id, filePattern, index);
+  }, [downloadFile, doneFiles, filePattern]);
+
+  const handleDownloadAll = useCallback(() => {
+    downloadAll(filePattern);
+  }, [downloadAll, filePattern]);
+
   const hasFiles = files.length > 0;
-  const hasDone = files.some((f) => f.status === 'done');
+  const hasDone = doneFiles.length > 0;
   const hasIdle = files.some((f) => f.status === 'idle' && f.targetFormat);
 
   return (
@@ -87,6 +102,15 @@ export function ConverterTab({ preferredFormat, onHashFile }: Props) {
         <>
           <GlobalProgress files={files} />
 
+          {/* Batch rename pattern — only shown when there are results */}
+          {hasDone && (
+            <BatchRenamePanel
+              pattern={filePattern}
+              onChange={setFilePattern}
+              files={files}
+            />
+          )}
+
           <div className="flex flex-col sm:flex-row flex-wrap gap-2 mb-4">
             {hasIdle && (
               <button onClick={convertAll} className="btn-primary">
@@ -94,7 +118,7 @@ export function ConverterTab({ preferredFormat, onHashFile }: Props) {
               </button>
             )}
             {hasDone && (
-              <button onClick={downloadAll} className="btn-success">
+              <button onClick={handleDownloadAll} className="btn-success">
                 ⬇ Download all (ZIP)
               </button>
             )}
@@ -110,7 +134,7 @@ export function ConverterTab({ preferredFormat, onHashFile }: Props) {
                 item={item}
                 onRemove={removeFile}
                 onConvert={convertFile}
-                onDownload={downloadFile}
+                onDownload={handleDownloadFile}
                 onFormatChange={setTargetFormat}
                 onOptionsChange={setOptions}
                 onCleanExif={cleanExif}
