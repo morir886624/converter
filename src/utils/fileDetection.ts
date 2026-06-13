@@ -3,6 +3,7 @@ import type { FileCategory } from '../types';
 const EXT_CATEGORY: Record<string, FileCategory> = {
   jpg: 'image', jpeg: 'image', png: 'image', webp: 'image',
   bmp: 'image', gif: 'image', avif: 'image', tiff: 'image', tif: 'image',
+  heic: 'image', heif: 'image',
   mp3: 'audio', wav: 'audio', ogg: 'audio', aac: 'audio', flac: 'audio', m4a: 'audio',
   mp4: 'video', webm: 'video', avi: 'video', mov: 'video', mkv: 'video',
   pdf: 'document', docx: 'document', doc: 'document',
@@ -23,6 +24,15 @@ const MAGIC: Array<{ sig: number[]; offset: number; ext: string }> = [
   { sig: [0x49, 0x44, 0x33], offset: 0, ext: 'mp3' },
   // WAV: RIFF....WAVE
   { sig: [0x52, 0x49, 0x46, 0x46], offset: 0, ext: 'wav' },
+  // HEIC/HEIF: ftyp box at offset 4, brand at offset 8
+  // "ftyp" + "heic"
+  { sig: [0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x63], offset: 4, ext: 'heic' },
+  // "ftyp" + "heis"
+  { sig: [0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x73], offset: 4, ext: 'heic' },
+  // "ftyp" + "heif"
+  { sig: [0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x66], offset: 4, ext: 'heif' },
+  // "ftyp" + "mif1" (HEIF multi-image)
+  { sig: [0x66, 0x74, 0x79, 0x70, 0x6d, 0x69, 0x66, 0x31], offset: 4, ext: 'heif' },
 ];
 
 function fromMagic(buf: Uint8Array): string | null {
@@ -44,7 +54,7 @@ export function detectFile(file: File): { category: FileCategory; extension: str
 }
 
 export async function detectFileWithMagic(file: File): Promise<{ category: FileCategory; extension: string }> {
-  const slice = file.slice(0, 12);
+  const slice = file.slice(0, 16);
   const buf = new Uint8Array(await slice.arrayBuffer());
   const magicExt = fromMagic(buf);
   const ext = magicExt ?? getExtension(file.name);

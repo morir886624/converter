@@ -5,6 +5,7 @@ import { exifCleanerConverter } from './exifCleaner';
 import { documentConverter } from './documents';
 import { dataConverter } from './data';
 import { archiveConverter } from './archives';
+import { heicConverter } from './heic';
 
 // ffmpeg converter is registered lazily when first needed
 let _ffmpegConverter: ConverterPlugin | null = null;
@@ -26,6 +27,7 @@ const STATIC_CONVERTERS: ConverterPlugin[] = [
   documentConverter,
   dataConverter,
   archiveConverter,
+  heicConverter,
 ];
 
 // Returns formats from ALL static converters that accept ext (union, deduped).

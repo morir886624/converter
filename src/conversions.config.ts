@@ -134,6 +134,26 @@ export const conversions: ConversionDef[] = [
     title: 'Convertir GIF en WebP gratuitement',
     description: 'Convertissez vos GIF animés en WebP animé pour une taille de fichier considérablement réduite, idéal pour les sites web modernes.',
   },
+  {
+    slug: 'heic-en-jpg',
+    from: 'heic',
+    to: 'jpg',
+    category: 'image',
+    title: 'Convertir HEIC en JPG gratuitement',
+    description: 'Convertissez vos photos iPhone au format HEIC en JPEG compatible avec Windows, Android et tous les logiciels photo. Conversion 100 % locale, vos photos ne quittent pas votre appareil.',
+    specificFaq: {
+      question: 'Pourquoi mes photos iPhone sont-elles au format HEIC ?',
+      answer: 'Apple utilise HEIC (High Efficiency Image Container) par défaut depuis iOS 11 car il offre une qualité équivalente au JPEG en prenant deux fois moins de place. Il est cependant moins compatible avec les logiciels et services tiers.',
+    },
+  },
+  {
+    slug: 'heic-en-png',
+    from: 'heic',
+    to: 'png',
+    category: 'image',
+    title: 'Convertir HEIC en PNG gratuitement',
+    description: 'Transformez vos photos iPhone HEIC en PNG sans perte pour les éditer dans Photoshop, GIMP ou tout autre éditeur graphique. Aucun upload, tout reste sur votre appareil.',
+  },
   // ── Audio ─────────────────────────────────────────────────────────────────
   {
     slug: 'mp4-en-mp3',
