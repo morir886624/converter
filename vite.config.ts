@@ -1,10 +1,31 @@
 import { defineConfig } from 'vite';
+import { writeFileSync } from 'node:fs';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { conversions, DOMAIN } from './src/conversions.config';
+
+function sitemapPlugin() {
+  return {
+    name: 'generate-sitemap',
+    closeBundle() {
+      const paths = ['/', '/app', ...conversions.map((c) => `/${c.slug}`)];
+      const now = new Date().toISOString().split('T')[0];
+      const urls = paths
+        .map(
+          (p) =>
+            `  <url>\n    <loc>${DOMAIN}${p}</loc>\n    <lastmod>${now}</lastmod>\n  </url>`,
+        )
+        .join('\n');
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+      writeFileSync('dist/sitemap.xml', xml);
+    },
+  };
+}
 
 export default defineConfig({
   plugins: [
     react(),
+    sitemapPlugin(),
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['icon.svg', 'ffmpeg/**'],

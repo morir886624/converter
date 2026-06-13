@@ -43,11 +43,15 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
     });
   }, []);
 
-  const addFiles = useCallback(async (newFiles: File[]) => {
+  const addFiles = useCallback(async (newFiles: File[], preferredFormat?: string) => {
     const items = await Promise.all(
       newFiles.map(async (file): Promise<FileItem> => {
         const { category, extension } = detectFile(file);
         const availableFormats = await getOutputFormats(extension);
+        const targetFormat =
+          preferredFormat && availableFormats.includes(preferredFormat)
+            ? preferredFormat
+            : (availableFormats[0] ?? null);
         return {
           id: crypto.randomUUID(),
           file,
@@ -57,7 +61,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
           category,
           extension,
           availableFormats,
-          targetFormat: availableFormats[0] ?? null,
+          targetFormat,
           options: { quality: 90, bitrate: '128k', delimiter: ',' },
           status: 'idle',
           progress: 0,
