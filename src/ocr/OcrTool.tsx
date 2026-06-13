@@ -101,6 +101,23 @@ export function OcrTool() {
     setError(null);
   }, []);
 
+  // Clipboard paste — pick first image item (not during active recognition)
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      if (running) return;
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT' || target.isContentEditable) return;
+      const items = Array.from(e.clipboardData?.items ?? []).filter((i) => i.type.startsWith('image/'));
+      if (!items.length) return;
+      const raw = items[0].getAsFile();
+      if (!raw) return;
+      const ext = raw.type.split('/')[1]?.replace('jpeg', 'jpg') ?? 'png';
+      handleFile(new File([raw], `paste-${Date.now()}.${ext}`, { type: raw.type }));
+    };
+    window.addEventListener('paste', onPaste);
+    return () => window.removeEventListener('paste', onPaste);
+  }, [running, handleFile]);
+
   const handleRun = useCallback(async () => {
     if (!file) return;
     setRunning(true);

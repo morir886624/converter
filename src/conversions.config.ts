@@ -156,6 +156,46 @@ export const conversions: ConversionDef[] = [
     title: 'Convertir HEIC en PNG gratuitement',
     description: 'Transformez vos photos iPhone HEIC en PNG sans perte pour les éditer dans Photoshop, GIMP ou tout autre éditeur graphique. Aucun upload, tout reste sur votre appareil.',
   },
+  {
+    slug: 'jpg-en-png',
+    from: 'jpg',
+    to: 'png',
+    category: 'image',
+    title: 'Convertir JPG en PNG gratuitement',
+    description: 'Convertissez vos images JPEG en PNG sans perte, idéal pour conserver la transparence ou éditer l\'image dans un logiciel graphique.',
+    specificFaq: {
+      question: 'PNG est-il meilleur que JPG ?',
+      answer: 'PNG est sans perte (idéal pour les logos, captures d\'écran et texte) tandis que JPG compresse en perdant des données (mieux pour les photos). Choisissez PNG quand la qualité maximale ou la transparence sont importantes.',
+    },
+  },
+  {
+    slug: 'mp4-en-gif',
+    from: 'mp4',
+    to: 'gif',
+    category: 'video',
+    title: 'Convertir MP4 en GIF animé gratuitement',
+    description: 'Transformez un extrait vidéo MP4 en GIF animé directement dans votre navigateur. Ajustez la durée, la résolution et le nombre d\'images par seconde.',
+    specificFaq: {
+      question: 'Pourquoi mon GIF est-il volumineux ?',
+      answer: 'Le format GIF n\'utilise pas de compression vidéo moderne. Pour réduire la taille, diminuez la résolution, le nombre de FPS ou la durée de la séquence.',
+    },
+  },
+  {
+    slug: 'mp3-en-aac',
+    from: 'mp3',
+    to: 'aac',
+    category: 'audio',
+    title: 'Convertir MP3 en AAC gratuitement',
+    description: 'Convertissez vos fichiers MP3 en AAC, le format audio haute efficacité utilisé par Apple, Android et les plateformes de streaming modernes.',
+  },
+  {
+    slug: 'wav-en-ogg',
+    from: 'wav',
+    to: 'ogg',
+    category: 'audio',
+    title: 'Convertir WAV en OGG gratuitement',
+    description: 'Compressez vos fichiers audio WAV non compressés en OGG Vorbis, format libre et efficace idéal pour les jeux vidéo et applications web.',
+  },
   // ── Audio ─────────────────────────────────────────────────────────────────
   {
     slug: 'mp4-en-mp3',
@@ -349,9 +389,9 @@ export const conversions: ConversionDef[] = [
 export const CATEGORY_LABEL: Record<ConversionCategory, string> = {
   image: 'Images',
   audio: 'Audio',
-  video: 'Vidéo',
+  video: 'Video',
   document: 'Documents',
-  data: 'Données',
+  data: 'Data',
   archive: 'Archives',
 };
 

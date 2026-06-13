@@ -230,10 +230,13 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
       ),
     );
 
+    const ctrl = new AbortController();
+    abortMap.current.set(id, ctrl);
     trackConversionStarted(extension, 'jpg-clean');
     try {
       const result = await convert(file, extension, 'jpg-clean', options,
         (pct) => setFiles((prev) => prev.map((f) => f.id === id ? { ...f, progress: pct } : f)),
+        ctrl.signal,
       );
       const resultPreviewUrl = URL.createObjectURL(result);
       setFiles((prev) =>
@@ -244,6 +247,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
       trackConversionSuccess(extension, 'jpg-clean');
       onSuccessRef.current?.(file, extension, 'jpg-clean', outputFileName, category, result);
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       const errMsg = err instanceof Error ? err.message : 'Unknown error';
       setFiles((prev) =>
         prev.map((f) =>
@@ -254,6 +258,8 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
       );
       trackConversionError(extension, 'jpg-clean');
       onFailureRef.current?.(file, extension, 'jpg-clean', outputFileName, category, errMsg);
+    } finally {
+      abortMap.current.delete(id);
     }
   }, [setFiles]);
 
@@ -273,10 +279,13 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
       ),
     );
 
+    const ctrl = new AbortController();
+    abortMap.current.set(id, ctrl);
     trackConversionStarted(extension, 'trim-copy');
     try {
       const result = await convert(file, extension, 'trim-copy', options,
         (pct) => setFiles((prev) => prev.map((f) => f.id === id ? { ...f, progress: pct } : f)),
+        ctrl.signal,
       );
       setFiles((prev) =>
         prev.map((f) =>
@@ -286,6 +295,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
       trackConversionSuccess(extension, 'trim-copy');
       onSuccessRef.current?.(file, extension, 'trim-copy', outputFileName, category, result);
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       const errMsg = err instanceof Error ? err.message : 'Unknown error';
       setFiles((prev) =>
         prev.map((f) =>
@@ -296,6 +306,8 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
       );
       trackConversionError(extension, 'trim-copy');
       onFailureRef.current?.(file, extension, 'trim-copy', outputFileName, category, errMsg);
+    } finally {
+      abortMap.current.delete(id);
     }
   }, [setFiles]);
 

@@ -1,7 +1,9 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Head } from 'vite-react-ssg';
 import { DOMAIN } from '../conversions.config';
 import { ConverterTab } from '../components/ConverterTab';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 
 const PdfTools = lazy(() => import('../pdf-tools/PdfTools').then((m) => ({ default: m.PdfTools })));
 const ImageTools = lazy(() => import('../image-tools/ImageTools').then((m) => ({ default: m.ImageTools })));
@@ -25,6 +27,8 @@ const TABS: { id: AppTab; icon: string; label: string }[] = [
 export function FullAppPage() {
   const [tab, setTab] = useState<AppTab>('converter');
   const [checksumFile, setChecksumFile] = useState<File | null>(null);
+  const [searchParams] = useSearchParams();
+  const preferredFormat = searchParams.get('to') ?? undefined;
 
   const handleHashFile = useCallback((file: File) => {
     setChecksumFile(file);
@@ -67,25 +71,27 @@ export function FullAppPage() {
       {/* Tab content */}
       <main className="py-4 sm:py-6">
         {tab === 'converter' && (
-          <ConverterTab onHashFile={handleHashFile} />
+          <ConverterTab preferredFormat={preferredFormat} onHashFile={handleHashFile} />
         )}
 
-        <Suspense fallback={<div className="flex items-center justify-center py-16 text-slate-400 text-sm">Loading…</div>}>
-          {tab === 'pdf' && <PdfTools />}
-          {tab === 'image' && <ImageTools />}
-          {tab === 'watermark' && (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
-              <WatermarkTool />
-            </div>
-          )}
-          {tab === 'favicon' && (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
-              <FaviconGenerator />
-            </div>
-          )}
-          {tab === 'checksum' && <ChecksumTool initialFile={checksumFile} />}
-          {tab === 'ocr' && <OcrTool />}
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<div className="flex items-center justify-center py-16 text-slate-400 text-sm">Loading…</div>}>
+            {tab === 'pdf' && <PdfTools />}
+            {tab === 'image' && <ImageTools />}
+            {tab === 'watermark' && (
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+                <WatermarkTool />
+              </div>
+            )}
+            {tab === 'favicon' && (
+              <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+                <FaviconGenerator />
+              </div>
+            )}
+            {tab === 'checksum' && <ChecksumTool initialFile={checksumFile} />}
+            {tab === 'ocr' && <OcrTool />}
+          </Suspense>
+        </ErrorBoundary>
       </main>
     </div>
   );

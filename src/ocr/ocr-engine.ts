@@ -35,22 +35,36 @@ function mapPct(status: string, progress: number): number {
   return 0;
 }
 
-// Tesseract.js processes images in its own built-in Web Worker;
-// calling recognize() here only awaits a Promise — the main thread is never blocked.
+// Persistent worker — reused across calls for the same language to avoid
+// re-downloading the language model on every recognition.
+type TesseractWorker = Awaited<ReturnType<Awaited<typeof import('tesseract.js')>['createWorker']>>;
+let _worker: TesseractWorker | null = null;
+let _workerLang: OcrLangCode | null = null;
+const _progressRef = { current: (_m: { status: string; progress: number }) => {} };
+
+async function getWorker(lang: OcrLangCode): Promise<TesseractWorker> {
+  const { createWorker } = await import('tesseract.js');
+  if (_worker && _workerLang === lang) return _worker;
+  if (_worker) { await _worker.terminate(); _worker = null; }
+  _worker = await createWorker(lang, 1, {
+    logger: (m: { status: string; progress: number }) => _progressRef.current(m),
+  });
+  _workerLang = lang;
+  return _worker;
+}
+
 export async function recognizeImage(
   file: File | Blob,
   lang: OcrLangCode,
   onProgress: (p: OcrProgress) => void,
 ): Promise<OcrResult> {
-  const { default: Tesseract } = await import('tesseract.js');
-  const result = await Tesseract.recognize(file, lang, {
-    logger: (m: { status: string; progress: number }) => {
-      onProgress({
-        pct: mapPct(m.status, m.progress ?? 0),
-        status: STATUS_LABELS[m.status] ?? m.status,
-      });
-    },
+  _progressRef.current = (m) => onProgress({
+    pct: mapPct(m.status, m.progress ?? 0),
+    status: STATUS_LABELS[m.status] ?? m.status,
   });
+  const worker = await getWorker(lang);
+  const result = await worker.recognize(file);
+  _progressRef.current = () => {};
   return {
     text: result.data.text.trim(),
     confidence: Math.round(result.data.confidence),

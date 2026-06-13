@@ -40,16 +40,16 @@ export function HomePage() {
   return (
     <>
       <Head>
-        <title>File Converter — Convertisseur de fichiers gratuit en ligne</title>
+        <title>File Converter — Free Online File Converter</title>
         <meta
           name="description"
-          content="Convertissez vos fichiers gratuitement directement dans votre navigateur. Images, PDF, audio, vidéo, données — 100 % local, aucun fichier envoyé sur internet."
+          content="Convert your files for free directly in your browser. Images, PDF, audio, video, data — 100% local, no files ever sent to any server."
         />
         <link rel="canonical" href={DOMAIN + '/'} />
-        <meta property="og:title" content="File Converter — Convertisseur de fichiers gratuit" />
+        <meta property="og:title" content="File Converter — Free file conversion tool" />
         <meta
           property="og:description"
-          content="Plus de 30 conversions disponibles : images, PDF, audio, vidéo et données. Tout s'effectue dans votre navigateur, aucune donnée collectée."
+          content="30+ conversions available: images, PDF, audio, video and data. Everything runs in your browser — no data collected, no uploads."
         />
         <meta property="og:url" content={DOMAIN + '/'} />
         <meta property="og:type" content="website" />
@@ -59,21 +59,21 @@ export function HomePage() {
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-4 pt-10 pb-8 text-center">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50 mb-4">
-          Convertissez vos fichiers <span className="text-brand-600 dark:text-brand-400">gratuitement</span>
+          Convert your files <span className="text-brand-600 dark:text-brand-400">for free</span>
         </h1>
         <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed mb-6">
-          Plus de 30 conversions disponibles — images, PDF, audio, vidéo et données.
-          Tout se passe dans votre navigateur.{' '}
-          <strong className="text-slate-800 dark:text-slate-200">Aucun fichier n'est jamais envoyé sur internet.</strong>
+          30+ conversions available — images, PDF, audio, video and data.
+          Everything runs in your browser.{' '}
+          <strong className="text-slate-800 dark:text-slate-200">No files ever leave your device.</strong>
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             to="/app"
             className="btn-primary px-6 py-2.5 text-sm font-semibold"
           >
-            ⚡ Ouvrir le convertisseur complet
+            ⚡ Open the full converter
           </Link>
-          <span className="text-xs text-slate-400 dark:text-slate-500">ou choisissez une conversion ci-dessous</span>
+          <span className="text-xs text-slate-400 dark:text-slate-500">or choose a conversion below</span>
         </div>
       </section>
 
@@ -85,13 +85,13 @@ export function HomePage() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher une conversion… ex: jpg, mp3, pdf"
+            placeholder="Search for a conversion… e.g. jpg, mp3, pdf"
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-400 dark:focus:ring-brand-500 transition-shadow"
           />
         </div>
         {query && (
           <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-            {totalResults === 0 ? 'Aucun résultat.' : `${totalResults} conversion${totalResults > 1 ? 's' : ''} trouvée${totalResults > 1 ? 's' : ''}`}
+            {totalResults === 0 ? 'No results.' : `${totalResults} conversion${totalResults > 1 ? 's' : ''} found`}
           </p>
         )}
       </div>
@@ -120,7 +120,10 @@ export function HomePage() {
                         {conv.from.toUpperCase()} → {conv.to.toUpperCase()}
                       </p>
                       <p className="text-xs text-slate-400 dark:text-slate-500 truncate leading-snug mt-0.5">
-                        {conv.title.replace(/^Convertir\s+/i, '').replace(/\s+gratuitement$/i, '')}
+                        {conv.title
+                          .replace(/^Convertir\s+/i, '')
+                          .replace(/\s+gratuitement$/i, '')
+                          .replace(/^Extraire le texte d'un\s+/i, '')}
                       </p>
                     </div>
                     <span className="ml-auto shrink-0 text-slate-300 dark:text-slate-600 group-hover:text-brand-400 transition-colors text-sm" aria-hidden>›</span>
@@ -136,9 +139,9 @@ export function HomePage() {
       <section className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/30">
         <div className="max-w-4xl mx-auto px-4 py-10 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
           {[
-            { icon: '🔒', title: '100 % local', desc: 'Aucun fichier n\'est envoyé sur un serveur. Tout reste sur votre appareil.' },
-            { icon: '🆓', title: 'Gratuit & sans compte', desc: 'Pas d\'inscription, pas de limite d\'utilisation, pas de filigrane.' },
-            { icon: '📶', title: 'Fonctionne hors ligne', desc: 'Une fois la page chargée, vous pouvez couper internet et continuer à convertir.' },
+            { icon: '🔒', title: '100% local', desc: 'No files are sent to any server. Everything stays on your device.' },
+            { icon: '🆓', title: 'Free, no account', desc: 'No sign-up, no usage limit, no watermark.' },
+            { icon: '📶', title: 'Works offline', desc: 'Once the page is loaded, you can cut internet and keep converting.' },
           ].map(({ icon, title, desc }) => (
             <div key={title}>
               <div className="text-3xl mb-2" aria-hidden>{icon}</div>
