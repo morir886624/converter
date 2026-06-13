@@ -6,8 +6,19 @@ const ImageTools = lazy(() => import('../image-tools/ImageTools').then((m) => ({
 const WatermarkTool = lazy(() => import('../watermark/WatermarkTool').then((m) => ({ default: m.WatermarkTool })));
 const FaviconGenerator = lazy(() => import('../favicon-generator/FaviconTool').then((m) => ({ default: m.FaviconGenerator })));
 const ChecksumTool = lazy(() => import('../checksum/ChecksumTool').then((m) => ({ default: m.ChecksumTool })));
+const OcrTool = lazy(() => import('../ocr/OcrTool').then((m) => ({ default: m.OcrTool })));
 
-type AppTab = 'converter' | 'pdf' | 'image' | 'watermark' | 'favicon' | 'checksum';
+type AppTab = 'converter' | 'pdf' | 'image' | 'watermark' | 'favicon' | 'checksum' | 'ocr';
+
+const TABS: { id: AppTab; icon: string; label: string }[] = [
+  { id: 'converter', icon: '🔄', label: 'Converter'   },
+  { id: 'pdf',       icon: '📄', label: 'PDF Tools'   },
+  { id: 'image',     icon: '✨', label: 'Image Tools' },
+  { id: 'watermark', icon: '💧', label: 'Watermark'   },
+  { id: 'favicon',   icon: '🖼️', label: 'Favicon'     },
+  { id: 'checksum',  icon: '🔐', label: 'Checksum'    },
+  { id: 'ocr',       icon: '🔍', label: 'OCR'         },
+];
 
 export function FullAppPage() {
   const [tab, setTab] = useState<AppTab>('converter');
@@ -21,30 +32,25 @@ export function FullAppPage() {
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-4">
 
-      {/* Tab bar */}
+      {/* Tab bar — scrollable on mobile, flex row on sm+ */}
       <div className="pt-4">
-        <div className="grid grid-cols-6 sm:flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
-          {([
-            { id: 'converter', icon: '🔄', label: 'Converter',   span: 'col-span-2' },
-            { id: 'pdf',       icon: '📄', label: 'PDF Tools',   span: 'col-span-2' },
-            { id: 'image',     icon: '✨', label: 'Image Tools', span: 'col-span-2' },
-            { id: 'watermark', icon: '💧', label: 'Watermark',   span: 'col-span-2' },
-            { id: 'favicon',   icon: '🖼️', label: 'Favicon',     span: 'col-span-2' },
-            { id: 'checksum',  icon: '🔐', label: 'Checksum',    span: 'col-span-2' },
-          ] as { id: AppTab; icon: string; label: string; span: string }[]).map(({ id, icon, label, span }) => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              className={`${span} sm:flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-2 sm:py-2 rounded-lg text-[11px] sm:text-sm font-medium transition-colors ${
-                tab === id
-                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-              }`}
-            >
-              <span aria-hidden className="text-base leading-none">{icon}</span>
-              <span>{label}</span>
-            </button>
-          ))}
+        <div className="-mx-3 sm:mx-0 overflow-x-auto scrollbar-hide px-3 sm:px-0">
+          <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-max sm:w-auto min-w-full sm:min-w-0">
+            {TABS.map(({ id, icon, label }) => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className={`shrink-0 sm:flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 px-3 sm:px-2 py-2 rounded-lg text-[11px] sm:text-sm font-medium transition-colors whitespace-nowrap ${
+                  tab === id
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                }`}
+              >
+                <span aria-hidden className="text-base leading-none">{icon}</span>
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -68,6 +74,7 @@ export function FullAppPage() {
             </div>
           )}
           {tab === 'checksum' && <ChecksumTool initialFile={checksumFile} />}
+          {tab === 'ocr' && <OcrTool />}
         </Suspense>
       </main>
     </div>
