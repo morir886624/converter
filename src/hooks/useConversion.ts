@@ -4,6 +4,7 @@ import { detectFile } from '../utils/fileDetection';
 import { getOutputFormats, convert } from '../converters/registry';
 import { downloadBlob, replaceExtension } from '../utils/download';
 import { applyFilenamePattern, getBaseName, getOutputExt, todayIso } from '../utils/filenamePattern';
+import { trackConversionStarted, trackConversionSuccess, trackConversionError } from '../utils/analytics';
 
 type SuccessCb = (
   file: File, inputExt: string, outputFormat: string,
@@ -103,6 +104,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
     const outputFileName = replaceExtension(file.name, targetFormat);
     const recordable = targetFormat !== 'extract';
 
+    trackConversionStarted(extension, targetFormat);
     try {
       const result = await convert(
         file, extension, targetFormat, options,
@@ -118,6 +120,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
           f.id === id ? { ...f, status: 'done', progress: 100, result, resultPreviewUrl } : f,
         ),
       );
+      trackConversionSuccess(extension, targetFormat);
       if (recordable) onSuccessRef.current?.(file, extension, targetFormat, outputFileName, category, result);
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : 'Unknown error';
@@ -128,6 +131,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
             : f,
         ),
       );
+      trackConversionError(extension, targetFormat);
       if (recordable) onFailureRef.current?.(file, extension, targetFormat, outputFileName, category, errMsg);
     }
   }, [setFiles]);
@@ -205,6 +209,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
       ),
     );
 
+    trackConversionStarted(extension, 'jpg-clean');
     try {
       const result = await convert(file, extension, 'jpg-clean', options,
         (pct) => setFiles((prev) => prev.map((f) => f.id === id ? { ...f, progress: pct } : f)),
@@ -215,6 +220,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
           f.id === id ? { ...f, status: 'done', progress: 100, result, resultPreviewUrl } : f,
         ),
       );
+      trackConversionSuccess(extension, 'jpg-clean');
       onSuccessRef.current?.(file, extension, 'jpg-clean', outputFileName, category, result);
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : 'Erreur inconnue';
@@ -225,6 +231,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
             : f,
         ),
       );
+      trackConversionError(extension, 'jpg-clean');
       onFailureRef.current?.(file, extension, 'jpg-clean', outputFileName, category, errMsg);
     }
   }, [setFiles]);
@@ -245,6 +252,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
       ),
     );
 
+    trackConversionStarted(extension, 'trim-copy');
     try {
       const result = await convert(file, extension, 'trim-copy', options,
         (pct) => setFiles((prev) => prev.map((f) => f.id === id ? { ...f, progress: pct } : f)),
@@ -254,6 +262,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
           f.id === id ? { ...f, status: 'done', progress: 100, result, resultPreviewUrl: null } : f,
         ),
       );
+      trackConversionSuccess(extension, 'trim-copy');
       onSuccessRef.current?.(file, extension, 'trim-copy', outputFileName, category, result);
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : 'Unknown error';
@@ -264,6 +273,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
             : f,
         ),
       );
+      trackConversionError(extension, 'trim-copy');
       onFailureRef.current?.(file, extension, 'trim-copy', outputFileName, category, errMsg);
     }
   }, [setFiles]);

@@ -115,8 +115,20 @@ function Shell() {
       {/* Page content */}
       <Outlet />
 
-      <footer className="text-center text-xs text-slate-400 dark:text-slate-600 py-6 px-4">
-        No data collected. No files sent to any server.
+      <footer className="text-center text-xs text-slate-400 dark:text-slate-600 py-6 px-4 space-y-1">
+        <p>No data collected. No files sent to any server.</p>
+        <p>
+          Anonymous usage statistics via{' '}
+          <a
+            href="https://plausible.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-slate-500 dark:hover:text-slate-400 transition-colors"
+          >
+            Plausible Analytics
+          </a>
+          {' '}— no cookies, no personal data.
+        </p>
       </footer>
 
       {/* History panel */}
