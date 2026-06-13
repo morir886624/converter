@@ -44,6 +44,11 @@ export function FullAppPage() {
           content="Convert images, PDF, audio, video and data files directly in your browser. OCR, PDF tools, background removal, watermark — 100% local, no files uploaded."
         />
         <link rel="canonical" href={DOMAIN + '/app'} />
+        <meta property="og:title" content="Full File Converter — File Converter App" />
+        <meta property="og:description" content="Convert images, PDF, audio, video and data files directly in your browser. 100% local, no files ever uploaded." />
+        <meta property="og:url" content={DOMAIN + '/app'} />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content={DOMAIN + '/apple-touch-icon.png'} />
       </Head>
 
       {/* Tab bar — scrollable on mobile, flex row on sm+ */}

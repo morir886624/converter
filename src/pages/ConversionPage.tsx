@@ -29,6 +29,7 @@ export function ConversionPage({ config }: Props) {
         <meta property="og:description" content={config.description} />
         <meta property="og:url" content={canonical} />
         <meta property="og:type" content="website" />
+        <meta property="og:image" content={`${DOMAIN}/apple-touch-icon.png`} />
         <script type="application/ld+json">{JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'FAQPage',
@@ -44,7 +45,7 @@ export function ConversionPage({ config }: Props) {
 
         {/* Breadcrumb */}
         <nav className="pt-4 pb-2 text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
-          <Link to="/" className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Accueil</Link>
+          <Link to="/" className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Home</Link>
           <span aria-hidden>›</span>
           <span className="text-slate-600 dark:text-slate-300">{config.from.toUpperCase()} → {config.to.toUpperCase()}</span>
         </nav>
@@ -66,7 +67,7 @@ export function ConversionPage({ config }: Props) {
 
         {/* FAQ */}
         <section className="mt-10 pb-10">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4">Questions fréquentes</h2>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4">Frequently asked questions</h2>
           <dl className="space-y-4">
             {faqs.map((faq, i) => (
               <div
@@ -86,9 +87,9 @@ export function ConversionPage({ config }: Props) {
 
         {/* Link back to full tool */}
         <div className="pb-8 text-center text-xs text-slate-400 dark:text-slate-500">
-          Besoin de plus d'outils ?{' '}
-          <Link to="/app" className="text-brand-500 hover:underline">
-            Accédez au convertisseur complet →
+          Need more tools?{' '}
+          <Link to={`/app?to=${config.to}`} className="text-brand-500 hover:underline">
+            Open the full converter →
           </Link>
         </div>
       </div>

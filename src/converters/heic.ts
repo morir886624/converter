@@ -20,8 +20,8 @@ async function convertHeic(file: File, targetFormat: string, quality: number): P
   } catch (err) {
     const detail = err instanceof Error ? ` (${err.message})` : '';
     throw new Error(
-      `Impossible de convertir ce fichier HEIC${detail}. ` +
-      `Certaines variantes HEIC (HDR, Burst, Live Photos) ne sont pas supportées — essayez un autre fichier.`,
+      `Cannot convert this HEIC file${detail}. ` +
+      `Some HEIC variants (HDR, Burst, Live Photos) are not supported — try a different file.`,
     );
   }
 }

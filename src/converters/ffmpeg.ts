@@ -5,23 +5,53 @@ import { fetchFile, toBlobURL } from '@ffmpeg/util';
 let _ffmpeg: FFmpeg | null = null;
 let _loading: Promise<void> | null = null;
 
+// Module-level refs so any concurrent caller's callbacks are always current
+const _loadProgressCb = { current: (_pct: number) => {} };
+const _convProgressCb = { current: (_pct: number) => {} };
+
 // Self-hosted files (copied to public/ffmpeg/ by scripts/copy-ffmpeg.mjs)
 // Same-origin → no CORS issues, precached by the service worker for offline use
 const CORE_BASE = '/ffmpeg';
+
+// Download WASM with fetch+ReadableStream so we can report real progress
+async function fetchWasmWithProgress(url: string): Promise<string> {
+  const resp = await fetch(url);
+  const total = parseInt(resp.headers.get('content-length') ?? '0', 10);
+  if (!total || !resp.body) {
+    const blob = await resp.blob();
+    return URL.createObjectURL(new Blob([blob], { type: 'application/wasm' }));
+  }
+  const reader = resp.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let received = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) {
+      chunks.push(value);
+      received += value.length;
+      // Map 0-100% download → 10-90% of load phase
+      _loadProgressCb.current(10 + Math.round((received / total) * 80));
+    }
+  }
+  return URL.createObjectURL(new Blob(chunks, { type: 'application/wasm' }));
+}
 
 async function loadFFmpeg(onProgress?: (pct: number) => void): Promise<FFmpeg> {
   if (_ffmpeg?.loaded) return _ffmpeg;
 
   if (!_loading) {
+    if (onProgress) _loadProgressCb.current = onProgress;
     _loading = (async () => {
       _ffmpeg = new FFmpeg();
       _ffmpeg.on('progress', ({ progress }) => {
-        onProgress?.(Math.round(progress * 90));
+        _convProgressCb.current(Math.round(progress * 90));
       });
-      await _ffmpeg.load({
-        coreURL: await toBlobURL(`${CORE_BASE}/ffmpeg-core.js`, 'text/javascript'),
-        wasmURL: await toBlobURL(`${CORE_BASE}/ffmpeg-core.wasm`, 'application/wasm'),
-      });
+      _loadProgressCb.current(5);
+      const coreURL = await toBlobURL(`${CORE_BASE}/ffmpeg-core.js`, 'text/javascript');
+      _loadProgressCb.current(10);
+      const wasmURL = await fetchWasmWithProgress(`${CORE_BASE}/ffmpeg-core.wasm`);
+      await _ffmpeg.load({ coreURL, wasmURL });
     })();
   }
 
@@ -122,6 +152,8 @@ export const ffmpegConverter: ConverterPlugin = {
       console.warn(`Large file (${sizeMb.toFixed(0)} MB) — conversion may require a lot of RAM`);
     }
 
+    // Update conversion progress ref before any await so this caller owns it
+    _convProgressCb.current = onProgress ?? (() => {});
     onProgress?.(5);
     const ff = await loadFFmpeg(onProgress);
     onProgress?.(15);

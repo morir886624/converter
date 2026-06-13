@@ -100,65 +100,85 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
     );
   }, [setFiles]);
 
-  const convertFile = useCallback(async (id: string) => {
-    // Mark as converting first
+  // Shared conversion runner — used by convertFile, cleanExif, trimCopy.
+  // forcedFormat: override targetFormat (and reset result state).
+  // makeResultPreview: true = always create, false = never, undefined = auto-detect.
+  const _runConversion = useCallback(async (
+    id: string,
+    forcedFormat?: string,
+    makeResultPreview?: boolean,
+  ) => {
     setFiles((prev) =>
-      prev.map((f) =>
-        f.id === id && f.targetFormat
-          ? { ...f, status: 'converting' as const, progress: 0, error: null }
-          : f,
-      ),
+      prev.map((f) => {
+        if (f.id !== id) return f;
+        if (!forcedFormat && !f.targetFormat) return f;
+        return {
+          ...f,
+          ...(forcedFormat ? { targetFormat: forcedFormat, result: null, resultPreviewUrl: null } : {}),
+          status: 'converting' as const,
+          progress: 0,
+          error: null,
+        };
+      }),
     );
 
-    // Read current state from ref (always up-to-date after setFiles above)
     const item = filesRef.current.find((f) => f.id === id);
-    if (!item?.targetFormat) return;
+    if (!item) return;
+    const actualFormat = forcedFormat ?? item.targetFormat;
+    if (!actualFormat) return;
 
-    const { file, extension, targetFormat, options, category } = item;
-    const outputFileName = replaceExtension(file.name, targetFormat);
-    const recordable = targetFormat !== 'extract';
+    const { file, extension, options, category } = item;
+    const outputFileName = replaceExtension(file.name, actualFormat);
+    const recordable = actualFormat !== 'extract';
 
     const ctrl = new AbortController();
     abortMap.current.set(id, ctrl);
+    trackConversionStarted(extension, actualFormat);
 
-    trackConversionStarted(extension, targetFormat);
     try {
       const result = await convert(
-        file, extension, targetFormat, options,
+        file, extension, actualFormat, options,
         (pct) => setFiles((prev) => prev.map((f) => f.id === id ? { ...f, progress: pct } : f)),
         ctrl.signal,
       );
-      const resultPreviewUrl =
-        (detectFile(file).category === 'image' && targetFormat !== 'pdf') ||
-        result.type.startsWith('image/')
-          ? URL.createObjectURL(result)
-          : null;
+
+      let resultPreviewUrl: string | null = null;
+      if (makeResultPreview === true) {
+        resultPreviewUrl = URL.createObjectURL(result);
+      } else if (makeResultPreview === undefined) {
+        if ((detectFile(file).category === 'image' && actualFormat !== 'pdf') || result.type.startsWith('image/')) {
+          resultPreviewUrl = URL.createObjectURL(result);
+        }
+      }
+
       setFiles((prev) =>
         prev.map((f) =>
           f.id === id ? { ...f, status: 'done', progress: 100, result, resultPreviewUrl } : f,
         ),
       );
-      trackConversionSuccess(extension, targetFormat);
-      if (recordable) onSuccessRef.current?.(file, extension, targetFormat, outputFileName, category, result);
+      trackConversionSuccess(extension, actualFormat);
+      if (recordable) onSuccessRef.current?.(file, extension, actualFormat, outputFileName, category, result);
     } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') return; // already handled by cancelFile
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       const errMsg = err instanceof Error ? err.message : 'Unknown error';
       setFiles((prev) =>
         prev.map((f) =>
-          f.id === id
-            ? { ...f, status: 'error', error: errMsg }
-            : f,
+          f.id === id ? { ...f, status: 'error', error: errMsg } : f,
         ),
       );
-      trackConversionError(extension, targetFormat);
-      if (recordable) onFailureRef.current?.(file, extension, targetFormat, outputFileName, category, errMsg);
+      trackConversionError(extension, actualFormat);
+      if (recordable) onFailureRef.current?.(file, extension, actualFormat, outputFileName, category, errMsg);
     } finally {
       abortMap.current.delete(id);
     }
   }, [setFiles]);
 
+  const convertFile = useCallback((id: string) => _runConversion(id), [_runConversion]);
+
   const convertAll = useCallback(async () => {
-    const pending = filesRef.current.filter((f) => f.status === 'idle' && f.targetFormat);
+    const pending = filesRef.current.filter(
+      (f) => (f.status === 'idle' || f.status === 'cancelled') && f.targetFormat,
+    );
     await Promise.all(pending.map((f) => convertFile(f.id)));
   }, [convertFile]);
 
@@ -216,100 +236,10 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
     setFiles((prev) => prev.map((f) => f.id === id ? { ...f, options: { ...f.options, ...opts } } : f));
   }, [setFiles]);
 
-  const cleanExif = useCallback(async (id: string) => {
-    const item = filesRef.current.find((f) => f.id === id);
-    if (!item) return;
-    const { file, extension, options, category } = item;
-    const outputFileName = replaceExtension(file.name, 'jpg-clean');
+  const cleanExif = useCallback((id: string) => _runConversion(id, 'jpg-clean', true), [_runConversion]);
 
-    setFiles((prev) =>
-      prev.map((f) =>
-        f.id === id
-          ? { ...f, targetFormat: 'jpg-clean', status: 'converting' as const, progress: 0, error: null, result: null, resultPreviewUrl: null }
-          : f,
-      ),
-    );
-
-    const ctrl = new AbortController();
-    abortMap.current.set(id, ctrl);
-    trackConversionStarted(extension, 'jpg-clean');
-    try {
-      const result = await convert(file, extension, 'jpg-clean', options,
-        (pct) => setFiles((prev) => prev.map((f) => f.id === id ? { ...f, progress: pct } : f)),
-        ctrl.signal,
-      );
-      const resultPreviewUrl = URL.createObjectURL(result);
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === id ? { ...f, status: 'done', progress: 100, result, resultPreviewUrl } : f,
-        ),
-      );
-      trackConversionSuccess(extension, 'jpg-clean');
-      onSuccessRef.current?.(file, extension, 'jpg-clean', outputFileName, category, result);
-    } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') return;
-      const errMsg = err instanceof Error ? err.message : 'Unknown error';
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === id
-            ? { ...f, status: 'error', error: errMsg }
-            : f,
-        ),
-      );
-      trackConversionError(extension, 'jpg-clean');
-      onFailureRef.current?.(file, extension, 'jpg-clean', outputFileName, category, errMsg);
-    } finally {
-      abortMap.current.delete(id);
-    }
-  }, [setFiles]);
-
-  // Trim-and-copy: uses -c copy (fast, lossless), same format as source.
-  // Called directly (like cleanExif) to avoid stale-read race on targetFormat.
-  const trimCopy = useCallback(async (id: string) => {
-    const item = filesRef.current.find((f) => f.id === id);
-    if (!item) return;
-    const { file, extension, options, category } = item;
-    const outputFileName = replaceExtension(file.name, 'trim-copy');
-
-    setFiles((prev) =>
-      prev.map((f) =>
-        f.id === id
-          ? { ...f, targetFormat: 'trim-copy', status: 'converting' as const, progress: 0, error: null, result: null, resultPreviewUrl: null }
-          : f,
-      ),
-    );
-
-    const ctrl = new AbortController();
-    abortMap.current.set(id, ctrl);
-    trackConversionStarted(extension, 'trim-copy');
-    try {
-      const result = await convert(file, extension, 'trim-copy', options,
-        (pct) => setFiles((prev) => prev.map((f) => f.id === id ? { ...f, progress: pct } : f)),
-        ctrl.signal,
-      );
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === id ? { ...f, status: 'done', progress: 100, result, resultPreviewUrl: null } : f,
-        ),
-      );
-      trackConversionSuccess(extension, 'trim-copy');
-      onSuccessRef.current?.(file, extension, 'trim-copy', outputFileName, category, result);
-    } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') return;
-      const errMsg = err instanceof Error ? err.message : 'Unknown error';
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === id
-            ? { ...f, status: 'error', error: errMsg }
-            : f,
-        ),
-      );
-      trackConversionError(extension, 'trim-copy');
-      onFailureRef.current?.(file, extension, 'trim-copy', outputFileName, category, errMsg);
-    } finally {
-      abortMap.current.delete(id);
-    }
-  }, [setFiles]);
+  // Trim-and-copy: -c copy (fast, lossless), keeps source format, no preview needed
+  const trimCopy = useCallback((id: string) => _runConversion(id, 'trim-copy', false), [_runConversion]);
 
   const clearAll = useCallback(() => {
     setFiles((prev) => {

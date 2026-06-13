@@ -21,16 +21,16 @@ export const DOMAIN = 'https://converter.morir.fr';
 
 export const COMMON_FAQS: FaqItem[] = [
   {
-    question: 'Est-ce gratuit ?',
-    answer: 'Oui, totalement gratuit, sans inscription et sans limite d\'utilisation.',
+    question: 'Is it free?',
+    answer: 'Yes, completely free — no sign-up required and no usage limits.',
   },
   {
-    question: 'Mes fichiers sont-ils envoyés sur internet ?',
-    answer: 'Non. Toutes les conversions s\'effectuent directement dans votre navigateur. Vos fichiers ne quittent jamais votre appareil.',
+    question: 'Are my files sent over the internet?',
+    answer: 'No. All conversions happen directly in your browser. Your files never leave your device.',
   },
   {
-    question: 'Y a-t-il une limite de taille ?',
-    answer: 'Il n\'y a pas de limite côté serveur (il n\'y en a pas). La seule contrainte est la mémoire disponible dans votre navigateur — généralement plusieurs centaines de Mo.',
+    question: 'Is there a file size limit?',
+    answer: 'There is no server-side limit (there is no server). The only constraint is the available memory in your browser — typically several hundred MB.',
   },
 ];
 

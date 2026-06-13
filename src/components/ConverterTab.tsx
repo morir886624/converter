@@ -94,6 +94,11 @@ export function ConverterTab({ preferredFormat, onHashFile }: Props) {
 
   return (
     <>
+      {/* Screen reader live region — announces conversion completions */}
+      <div role="status" aria-live="polite" aria-atomic className="sr-only">
+        {doneFiles.length > 0 && `${doneFiles.length} file${doneFiles.length > 1 ? 's' : ''} converted`}
+      </div>
+
       {hasFiles
         ? <DropZone onFilesAdded={handleFilesAdded} compact />
         : <DropZone onFilesAdded={handleFilesAdded} />
