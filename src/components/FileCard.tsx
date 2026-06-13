@@ -140,7 +140,7 @@ const STATUS_MAP = {
     cls: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
   },
   cancelled: {
-    label: '— Annulé',
+    label: '— Cancelled',
     cls: 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400',
   },
 } as const;
@@ -337,7 +337,7 @@ export function FileCard({
       {/* ── Size warnings ── */}
       {isVeryLarge && (
         <p className="mt-2.5 text-xs text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2 border border-red-100 dark:border-red-800/30">
-          ⚠ Fichier très volumineux ({formatBytes(item.size)}) — la conversion peut échouer par manque de mémoire dans le navigateur.
+          ⚠ Very large file ({formatBytes(item.size)}) — conversion may fail due to insufficient browser memory.
         </p>
       )}
       {!isVeryLarge && isBig && (
@@ -357,7 +357,7 @@ export function FileCard({
                 onClick={() => onCancel(item.id)}
                 className="text-xs text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
               >
-                ✕ Annuler
+                ✕ Cancel
               </button>
             )}
           </div>

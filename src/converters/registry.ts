@@ -74,5 +74,5 @@ export async function convert(
   if (ffmpeg?.inputFormats.includes(ext)) {
     return ffmpeg.convert(file, targetFormat, options, onProgress, signal);
   }
-  throw new Error(`Aucun convertisseur disponible pour .${ext} → .${targetFormat}`);
+  throw new Error(`No converter available for .${ext} → .${targetFormat}`);
 }

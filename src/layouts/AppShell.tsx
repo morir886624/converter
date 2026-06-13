@@ -79,7 +79,7 @@ function Shell() {
       ) : (
         <div className="bg-amber-500 text-white text-center text-xs sm:text-sm py-2 px-3 font-medium leading-snug flex items-center justify-center gap-2">
           <span aria-hidden>📶</span>
-          <span>Hors ligne — toutes les conversions fonctionnent normalement</span>
+          <span>Offline — all conversions still work normally</span>
         </div>
       )}
 

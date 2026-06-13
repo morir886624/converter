@@ -34,10 +34,10 @@ export function FullAppPage() {
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-4">
       <Head>
-        <title>Convertisseur de fichiers complet — File Converter</title>
+        <title>Full File Converter — File Converter App</title>
         <meta
           name="description"
-          content="Convertissez images, PDF, audio, vidéo et données directement dans votre navigateur. OCR, outils PDF, suppression de fond, watermark — 100 % local, aucun fichier envoyé."
+          content="Convert images, PDF, audio, video and data files directly in your browser. OCR, PDF tools, background removal, watermark — 100% local, no files uploaded."
         />
         <link rel="canonical" href={DOMAIN + '/app'} />
       </Head>

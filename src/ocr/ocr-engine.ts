@@ -19,11 +19,11 @@ export interface OcrResult {
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  'loading tesseract core':    'Chargement du moteur OCR…',
-  'initializing tesseract':    'Initialisation…',
-  'loading language traineddata': 'Chargement du modèle de langue…',
-  'initializing api':          'Préparation…',
-  'recognizing text':          'Reconnaissance en cours…',
+  'loading tesseract core':       'Loading OCR engine…',
+  'initializing tesseract':       'Initializing…',
+  'loading language traineddata': 'Loading language model…',
+  'initializing api':             'Preparing…',
+  'recognizing text':             'Recognizing text…',
 };
 
 function mapPct(status: string, progress: number): number {
@@ -97,7 +97,7 @@ export async function recognizePdf(
   for (let i = 1; i <= numPages; i++) {
     onProgress({
       pct: Math.round(((i - 1) / numPages) * 95),
-      status: `Page ${i} / ${numPages} — rastérisation…`,
+      status: `Page ${i} / ${numPages} — rendering…`,
     });
     const blob = await pdfPageToBlob(pdf, i);
     const pageResult = await recognizeImage(blob, lang, ({ pct, status }) => {
@@ -108,7 +108,7 @@ export async function recognizePdf(
     totalConfidence += pageResult.confidence;
   }
 
-  onProgress({ pct: 100, status: 'Terminé' });
+  onProgress({ pct: 100, status: 'Done' });
   return {
     text: pageTexts.join('\n\n'),
     confidence: Math.round(totalConfidence / numPages),

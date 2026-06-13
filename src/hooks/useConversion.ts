@@ -244,7 +244,7 @@ export function useConversion(callbacks?: UseConversionCallbacks) {
       trackConversionSuccess(extension, 'jpg-clean');
       onSuccessRef.current?.(file, extension, 'jpg-clean', outputFileName, category, result);
     } catch (err) {
-      const errMsg = err instanceof Error ? err.message : 'Erreur inconnue';
+      const errMsg = err instanceof Error ? err.message : 'Unknown error';
       setFiles((prev) =>
         prev.map((f) =>
           f.id === id

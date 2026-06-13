@@ -155,7 +155,7 @@ export const ffmpegConverter: ConverterPlugin = {
               _ffmpeg?.terminate();
               _ffmpeg = null;
               _loading = null;
-              reject(new DOMException('Conversion annulée', 'AbortError'));
+              reject(new DOMException('Conversion cancelled', 'AbortError'));
             }, { once: true });
           })
         : null;
@@ -164,18 +164,18 @@ export const ffmpegConverter: ConverterPlugin = {
       if (err instanceof DOMException && err.name === 'AbortError') throw err;
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes('No such file') || msg.includes('Invalid data') || msg.includes('moov atom')) {
-        throw new Error('Fichier invalide ou corrompu — impossible de lire le fichier source.');
+        throw new Error('Invalid or corrupted file — unable to read the source file.');
       }
       if (msg.includes('Encoder') || msg.includes('codec') || msg.includes('Unknown encoder')) {
-        throw new Error('Format de sortie non supporté par ce navigateur. Essayez MP4 ou MP3.');
+        throw new Error('Output format not supported in this browser. Try MP4 or MP3.');
       }
       if (msg.includes('Out of memory') || msg.includes('Cannot allocate')) {
-        throw new Error('Mémoire insuffisante. Fermez d\'autres onglets ou essayez un fichier plus petit.');
+        throw new Error('Not enough memory. Close other tabs or try a smaller file.');
       }
       if (msg.includes('Permission denied') || msg.includes('Operation not permitted')) {
-        throw new Error('Erreur d\'accès au fichier. Rechargez la page et réessayez.');
+        throw new Error('File access error. Reload the page and try again.');
       }
-      throw new Error(`Échec de la conversion : ${msg.split('\n')[0]}`);
+      throw new Error(`Conversion failed: ${msg.split('\n')[0]}`);
     }
     onProgress?.(95);
 

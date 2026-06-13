@@ -48,14 +48,14 @@ function ImageDropZone({ onFile, file }: { onFile: (f: File) => void; file: File
           }
           <div className="min-w-0">
             <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{file.name}</p>
-            <p className="text-xs text-brand-500 dark:text-brand-400 mt-0.5">Cliquer ou déposer pour changer</p>
+            <p className="text-xs text-brand-500 dark:text-brand-400 mt-0.5">Click or drop to change</p>
           </div>
         </div>
       ) : (
         <div className="p-8 text-center">
           <p className="text-3xl mb-2" aria-hidden>🔍</p>
-          <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Déposer une image ici</p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">JPG, PNG, WebP, HEIC… ou cliquer pour parcourir</p>
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Drop an image or PDF here</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">JPG, PNG, WebP, HEIC, PDF… or click to browse</p>
         </div>
       )}
     </div>
@@ -75,7 +75,7 @@ function CopyButton({ text }: { text: string }) {
       }}
       className="btn-ghost text-xs px-3 py-1.5"
     >
-      {copied ? '✓ Copié' : '📋 Copier'}
+      {copied ? '✓ Copied' : '📋 Copy'}
     </button>
   );
 }
@@ -126,7 +126,7 @@ export function OcrTool() {
       setResult(r);
       setEditedText(r.text);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Échec de la reconnaissance OCR');
+      setError(err instanceof Error ? err.message : 'OCR recognition failed');
       if (resultPreviewRef.current) {
         URL.revokeObjectURL(resultPreviewRef.current);
         resultPreviewRef.current = null;
@@ -147,9 +147,9 @@ export function OcrTool() {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5 space-y-4">
       <div>
-        <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">Extraction de texte (OCR)</h2>
+        <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100">Text Extraction (OCR)</h2>
         <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-          Reconnaissance optique de caractères · 100 % local · modèle chargé à la demande
+          Optical character recognition · 100% local · language model loaded on demand
         </p>
       </div>
 
@@ -157,7 +157,7 @@ export function OcrTool() {
 
       {/* Language selector */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <span className="text-xs font-medium text-slate-600 dark:text-slate-300 shrink-0">Langue du document :</span>
+        <span className="text-xs font-medium text-slate-600 dark:text-slate-300 shrink-0">Document language:</span>
         <div className="flex flex-wrap gap-1.5">
           {OCR_LANGUAGES.map(({ code, label, flag }) => (
             <button
@@ -182,7 +182,7 @@ export function OcrTool() {
         disabled={!file || running}
         className="btn-primary w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {running ? '⏳ Extraction en cours…' : '⚡ Extraire le texte'}
+        {running ? '⏳ Extracting…' : '⚡ Extract text'}
       </button>
 
       {/* Progress */}
@@ -211,8 +211,8 @@ export function OcrTool() {
             <div className="flex gap-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg px-3 py-2.5 border border-amber-100 dark:border-amber-800/30">
               <span aria-hidden className="shrink-0 mt-px">⚠</span>
               <span>
-                <strong>Confiance faible : {result.confidence}%</strong> — l'image semble de mauvaise qualité.
-                Essayez une image plus nette, avec un meilleur contraste ou une résolution plus élevée.
+                <strong>Low confidence: {result.confidence}%</strong> — the image appears to be poor quality.
+                Try a sharper image with better contrast or higher resolution.
               </span>
             </div>
           )}
@@ -224,11 +224,11 @@ export function OcrTool() {
             {resultPreview && (
               <div>
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
-                  Image source
+                  Source image
                 </p>
                 <img
                   src={resultPreview}
-                  alt="Image source analysée"
+                  alt="Source image"
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-700 object-contain max-h-72"
                 />
               </div>
@@ -238,11 +238,11 @@ export function OcrTool() {
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                  Texte extrait
+                  Extracted text
                 </p>
                 {result.confidence >= CONFIDENCE_WARN && (
                   <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                    Confiance {result.confidence}%
+                    Confidence {result.confidence}%
                   </span>
                 )}
               </div>
@@ -252,13 +252,13 @@ export function OcrTool() {
                 rows={10}
                 spellCheck={false}
                 className="w-full text-sm font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-slate-800 dark:text-slate-200 resize-y focus:outline-none focus:ring-2 focus:ring-brand-400 dark:focus:ring-brand-500 leading-relaxed"
-                placeholder="Le texte extrait apparaîtra ici…"
+                placeholder="Extracted text will appear here…"
               />
               {editedText && (
                 <div className="flex flex-wrap gap-2">
                   <CopyButton text={editedText} />
                   <button onClick={handleDownload} className="btn-ghost text-xs px-3 py-1.5">
-                    ⬇ Télécharger .txt
+                    ⬇ Download .txt
                   </button>
                 </div>
               )}
