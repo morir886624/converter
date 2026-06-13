@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useTheme } from './hooks/useTheme';
 import { useConversion } from './hooks/useConversion';
+import { useHistory } from './hooks/useHistory';
 import { usePwa } from './hooks/usePwa';
 import { DropZone } from './components/DropZone';
 import { FileCard } from './components/FileCard';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ProgressBar } from './components/ProgressBar';
+import { HistoryPanel } from './components/HistoryPanel';
 
 const PdfTools = lazy(() => import('./pdf-tools/PdfTools').then((m) => ({ default: m.PdfTools })));
 const ImageTools = lazy(() => import('./image-tools/ImageTools').then((m) => ({ default: m.ImageTools })));
@@ -80,6 +82,16 @@ function PwaBanners({
 export default function App() {
   const { dark, toggleTheme } = useTheme();
   const {
+    entries: historyEntries,
+    totalSize: historyTotalSize,
+    addSuccess: historyAddSuccess,
+    addFailure: historyAddFailure,
+    removeEntry: historyRemove,
+    clearAll: historyClear,
+    downloadEntry: historyDownload,
+    downloadAllZip: historyDownloadAll,
+  } = useHistory();
+  const {
     files,
     addFiles,
     removeFile,
@@ -92,11 +104,12 @@ export default function App() {
     cleanExif,
     trimCopy,
     clearAll,
-  } = useConversion();
+  } = useConversion({ onSuccess: historyAddSuccess, onFailure: historyAddFailure });
   const { offlineReady, needRefresh, canInstall, updateServiceWorker, install, close } = usePwa();
   const [tab, setTab] = useState<AppTab>('converter');
   const [pwaVisible, setPwaVisible] = useState(true);
   const [checksumFile, setChecksumFile] = useState<File | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const handleHashFile = useCallback((file: File) => {
     setChecksumFile(file);
@@ -157,7 +170,25 @@ export default function App() {
               File Converter
             </h1>
           </div>
-          <ThemeToggle dark={dark} onToggle={toggleTheme} />
+          <div className="flex items-center gap-1 shrink-0">
+            {/* History button */}
+            <button
+              onClick={() => setHistoryOpen(true)}
+              aria-label="Open conversion history"
+              title="Conversion history"
+              className="relative flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5" aria-hidden>
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clipRule="evenodd" />
+              </svg>
+              {historyEntries.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center bg-brand-500 text-white text-[10px] font-bold rounded-full px-0.5 leading-none">
+                  {historyEntries.length > 99 ? '99+' : historyEntries.length}
+                </span>
+              )}
+            </button>
+            <ThemeToggle dark={dark} onToggle={toggleTheme} />
+          </div>
         </div>
       </header>
 
@@ -288,6 +319,19 @@ export default function App() {
       <footer className="text-center text-xs text-slate-400 dark:text-slate-600 py-6 px-4">
         No data collected. No files sent to any server.
       </footer>
+
+      {/* History panel */}
+      {historyOpen && (
+        <HistoryPanel
+          entries={historyEntries}
+          totalSize={historyTotalSize}
+          onClose={() => setHistoryOpen(false)}
+          onDownload={historyDownload}
+          onRemove={historyRemove}
+          onClearAll={historyClear}
+          onDownloadAll={historyDownloadAll}
+        />
+      )}
 
       {/* PWA banners */}
       {pwaVisible && (

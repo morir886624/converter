@@ -34,6 +34,21 @@ export interface FileItem {
   resultPreviewUrl: string | null;
 }
 
+export interface HistoryEntry {
+  id: string;
+  fileName: string;
+  outputFileName: string;
+  inputFormat: string;
+  outputFormat: string;
+  inputSize: number;
+  outputSize: number | null;
+  category: FileCategory;
+  timestamp: number;
+  status: 'success' | 'error';
+  error?: string;
+  blob: Blob | null;
+}
+
 export interface ConverterPlugin {
   name: string;
   category: FileCategory;

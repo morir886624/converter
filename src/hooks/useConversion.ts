@@ -1,18 +1,39 @@
-import { useState, useCallback, useRef } from 'react';
-import type { FileItem, ConversionOptions } from '../types';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import type { FileItem, ConversionOptions, FileCategory } from '../types';
 import { detectFile } from '../utils/fileDetection';
 import { getOutputFormats, convert } from '../converters/registry';
 import { downloadBlob, replaceExtension } from '../utils/download';
+
+type SuccessCb = (
+  file: File, inputExt: string, outputFormat: string,
+  outputFileName: string, category: FileCategory, blob: Blob,
+) => void;
+
+type FailureCb = (
+  file: File, inputExt: string, outputFormat: string,
+  outputFileName: string, category: FileCategory, error: string,
+) => void;
+
+interface UseConversionCallbacks {
+  onSuccess?: SuccessCb;
+  onFailure?: FailureCb;
+}
 
 function makePreviewUrl(file: File): string | null {
   if (detectFile(file).category === 'image') return URL.createObjectURL(file);
   return null;
 }
 
-export function useConversion() {
+export function useConversion(callbacks?: UseConversionCallbacks) {
   const [files, setFilesState] = useState<FileItem[]>([]);
   // Keep a ref in sync so async callbacks always read fresh state
   const filesRef = useRef<FileItem[]>([]);
+
+  // Stable refs for history callbacks — updated each render, never in deps
+  const onSuccessRef = useRef<SuccessCb | undefined>(undefined);
+  const onFailureRef = useRef<FailureCb | undefined>(undefined);
+  useEffect(() => { onSuccessRef.current = callbacks?.onSuccess; });
+  useEffect(() => { onFailureRef.current = callbacks?.onFailure; });
 
   const setFiles = useCallback((updater: (prev: FileItem[]) => FileItem[]) => {
     setFilesState((prev) => {
@@ -73,7 +94,9 @@ export function useConversion() {
     const item = filesRef.current.find((f) => f.id === id);
     if (!item?.targetFormat) return;
 
-    const { file, extension, targetFormat, options } = item;
+    const { file, extension, targetFormat, options, category } = item;
+    const outputFileName = replaceExtension(file.name, targetFormat);
+    const recordable = targetFormat !== 'extract';
 
     try {
       const result = await convert(
@@ -90,14 +113,17 @@ export function useConversion() {
           f.id === id ? { ...f, status: 'done', progress: 100, result, resultPreviewUrl } : f,
         ),
       );
+      if (recordable) onSuccessRef.current?.(file, extension, targetFormat, outputFileName, category, result);
     } catch (err) {
+      const errMsg = err instanceof Error ? err.message : 'Unknown error';
       setFiles((prev) =>
         prev.map((f) =>
           f.id === id
-            ? { ...f, status: 'error', error: err instanceof Error ? err.message : 'Unknown error' }
+            ? { ...f, status: 'error', error: errMsg }
             : f,
         ),
       );
+      if (recordable) onFailureRef.current?.(file, extension, targetFormat, outputFileName, category, errMsg);
     }
   }, [setFiles]);
 
@@ -146,9 +172,9 @@ export function useConversion() {
   const cleanExif = useCallback(async (id: string) => {
     const item = filesRef.current.find((f) => f.id === id);
     if (!item) return;
-    const { file, extension, options } = item;
+    const { file, extension, options, category } = item;
+    const outputFileName = replaceExtension(file.name, 'jpg-clean');
 
-    // Set format + status atomically, then call convert directly (no state round-trip)
     setFiles((prev) =>
       prev.map((f) =>
         f.id === id
@@ -167,14 +193,17 @@ export function useConversion() {
           f.id === id ? { ...f, status: 'done', progress: 100, result, resultPreviewUrl } : f,
         ),
       );
+      onSuccessRef.current?.(file, extension, 'jpg-clean', outputFileName, category, result);
     } catch (err) {
+      const errMsg = err instanceof Error ? err.message : 'Erreur inconnue';
       setFiles((prev) =>
         prev.map((f) =>
           f.id === id
-            ? { ...f, status: 'error', error: err instanceof Error ? err.message : 'Erreur inconnue' }
+            ? { ...f, status: 'error', error: errMsg }
             : f,
         ),
       );
+      onFailureRef.current?.(file, extension, 'jpg-clean', outputFileName, category, errMsg);
     }
   }, [setFiles]);
 
@@ -183,7 +212,8 @@ export function useConversion() {
   const trimCopy = useCallback(async (id: string) => {
     const item = filesRef.current.find((f) => f.id === id);
     if (!item) return;
-    const { file, extension, options } = item;
+    const { file, extension, options, category } = item;
+    const outputFileName = replaceExtension(file.name, 'trim-copy');
 
     setFiles((prev) =>
       prev.map((f) =>
@@ -202,14 +232,17 @@ export function useConversion() {
           f.id === id ? { ...f, status: 'done', progress: 100, result, resultPreviewUrl: null } : f,
         ),
       );
+      onSuccessRef.current?.(file, extension, 'trim-copy', outputFileName, category, result);
     } catch (err) {
+      const errMsg = err instanceof Error ? err.message : 'Unknown error';
       setFiles((prev) =>
         prev.map((f) =>
           f.id === id
-            ? { ...f, status: 'error', error: err instanceof Error ? err.message : 'Unknown error' }
+            ? { ...f, status: 'error', error: errMsg }
             : f,
         ),
       );
+      onFailureRef.current?.(file, extension, 'trim-copy', outputFileName, category, errMsg);
     }
   }, [setFiles]);
 
