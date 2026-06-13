@@ -178,6 +178,41 @@ export function useConversion() {
     }
   }, [setFiles]);
 
+  // Trim-and-copy: uses -c copy (fast, lossless), same format as source.
+  // Called directly (like cleanExif) to avoid stale-read race on targetFormat.
+  const trimCopy = useCallback(async (id: string) => {
+    const item = filesRef.current.find((f) => f.id === id);
+    if (!item) return;
+    const { file, extension, options } = item;
+
+    setFiles((prev) =>
+      prev.map((f) =>
+        f.id === id
+          ? { ...f, targetFormat: 'trim-copy', status: 'converting' as const, progress: 0, error: null, result: null, resultPreviewUrl: null }
+          : f,
+      ),
+    );
+
+    try {
+      const result = await convert(file, extension, 'trim-copy', options,
+        (pct) => setFiles((prev) => prev.map((f) => f.id === id ? { ...f, progress: pct } : f)),
+      );
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === id ? { ...f, status: 'done', progress: 100, result, resultPreviewUrl: null } : f,
+        ),
+      );
+    } catch (err) {
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === id
+            ? { ...f, status: 'error', error: err instanceof Error ? err.message : 'Unknown error' }
+            : f,
+        ),
+      );
+    }
+  }, [setFiles]);
+
   const clearAll = useCallback(() => {
     setFiles((prev) => {
       prev.forEach((f) => {
@@ -199,6 +234,7 @@ export function useConversion() {
     setTargetFormat,
     setOptions,
     cleanExif,
+    trimCopy,
     clearAll,
   };
 }

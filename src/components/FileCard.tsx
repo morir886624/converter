@@ -92,6 +92,7 @@ interface Props {
   onFormatChange: (id: string, fmt: string) => void;
   onOptionsChange: (id: string, opts: Partial<ConversionOptions>) => void;
   onCleanExif: (id: string) => void;
+  onTrimCopy?: (id: string) => void;
   onHashFile?: (file: File) => void;
 }
 
@@ -101,6 +102,7 @@ const FORMAT_LABELS: Record<string, string> = {
   bmp: 'BMP', gif: 'GIF', avif: 'AVIF',
   'png-nobg': 'Remove background → PNG',
   'jpg-clean': 'Supprimer l\'EXIF → JPEG',
+  'trim-copy': '✂ Trim only (copy)',
   mp3: 'MP3', wav: 'WAV', ogg: 'OGG', aac: 'AAC',
   mp4: 'MP4', webm: 'WebM',
   pdf: 'PDF', html: 'HTML', txt: 'TXT', md: 'Markdown',
@@ -195,7 +197,7 @@ function ZipPreview({ blob }: { blob: Blob }) {
 }
 
 export function FileCard({
-  item, onRemove, onConvert, onDownload, onFormatChange, onOptionsChange, onCleanExif, onHashFile,
+  item, onRemove, onConvert, onDownload, onFormatChange, onOptionsChange, onCleanExif, onTrimCopy, onHashFile,
 }: Props) {
   const isZipExtract = item.targetFormat === 'extract';
   const canConvert = item.status === 'idle' && item.targetFormat !== null;
@@ -253,8 +255,11 @@ export function FileCard({
                 className="select-field flex-1 sm:flex-none sm:w-auto font-medium"
               >
                 {item.availableFormats
-                  // jpg-clean is accessible via ExifPanel only; keep in list if currently selected
-                  .filter((fmt) => fmt !== 'jpg-clean' || item.targetFormat === 'jpg-clean')
+                  // virtual formats hidden from dropdown; visible only when currently selected
+                  .filter((fmt) =>
+                    (fmt !== 'jpg-clean' || item.targetFormat === 'jpg-clean') &&
+                    (fmt !== 'trim-copy' || item.targetFormat === 'trim-copy')
+                  )
                   .map((fmt) => (
                     <option key={fmt} value={fmt}>
                       {FORMAT_LABELS[fmt] ?? fmt.toUpperCase()}
@@ -373,6 +378,18 @@ export function FileCard({
         {item.status === 'done' && !isZipExtract && (
           <button onClick={() => onConvert(item.id)} className="btn-ghost text-sm px-3">
             ↺ Convert again
+          </button>
+        )}
+        {onTrimCopy &&
+          (item.category === 'audio' || item.category === 'video') &&
+          item.options.trimEnabled &&
+          item.status === 'idle' && (
+          <button
+            onClick={() => onTrimCopy(item.id)}
+            className="btn-ghost text-sm px-3"
+            title="Cut and save without re-encoding (fast)"
+          >
+            ✂ Trim only
           </button>
         )}
         {onHashFile && (

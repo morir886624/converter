@@ -1,6 +1,7 @@
 import type { ConversionOptions, FileCategory } from '../types';
 import { useImageEstimate } from '../hooks/useImageEstimate';
 import { formatBytes } from '../utils/download';
+import { TrimSelector } from './TrimSelector';
 
 interface Props {
   category: FileCategory;
@@ -73,8 +74,10 @@ export function ConversionOptions({ category, targetFormat, options, onChange, f
   const showDelimiter = isCsvOutput || (isCsvInput && targetFormat !== 'xlsx');
   const showMdMode = targetFormat === 'md' && sourceExt === 'json';
   const showBgRemovalInfo = targetFormat === 'png-nobg';
+  const showTrimCheckbox = category === 'audio' || category === 'video';
+  const showTrimSelector = showTrimCheckbox && options.trimEnabled && !!file;
 
-  if (!showQuality && !showMaxWidth && !showBitrate && !showResolution && !showFrameRate && !showDelimiter && !showMdMode && !showBgRemovalInfo) {
+  if (!showQuality && !showMaxWidth && !showBitrate && !showResolution && !showFrameRate && !showDelimiter && !showMdMode && !showBgRemovalInfo && !showTrimCheckbox) {
     return null;
   }
 
@@ -196,6 +199,30 @@ export function ConversionOptions({ category, targetFormat, options, onChange, f
             <option value="table">Markdown table</option>
           </select>
         </label>
+      )}
+
+      {showTrimCheckbox && (
+        <label className={`${ROW_CLS} cursor-pointer`}>
+          <span className={LABEL_CLS}>Trim</span>
+          <input
+            type="checkbox"
+            checked={options.trimEnabled ?? false}
+            onChange={(e) => onChange({ trimEnabled: e.target.checked })}
+            className="w-4 h-4 accent-brand-500 cursor-pointer"
+          />
+          <span className="text-xs text-slate-600 dark:text-slate-300 select-none">
+            Trim before conversion
+          </span>
+        </label>
+      )}
+
+      {showTrimSelector && file && (
+        <TrimSelector
+          file={file}
+          start={options.trimStart ?? 0}
+          end={options.trimEnd}
+          onChange={(s, e) => onChange({ trimStart: s, trimEnd: e })}
+        />
       )}
     </div>
   );

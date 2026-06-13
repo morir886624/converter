@@ -49,22 +49,40 @@ const MIME: Record<string, string> = {
 
 const SIZE_WARN_MB = 150;
 
-function buildAudioArgs(input: string, output: string, bitrate: string): string[] {
-  const args = ['-i', `input.${input}`];
+// Returns {before, after} args for trim. before goes before -i (fast seek);
+// after goes before the output filename (duration limiter, always unambiguous).
+function buildTrimArgs(opts: ConversionOptions): { before: string[]; after: string[] } {
+  if (!opts.trimEnabled) return { before: [], after: [] };
+  const start = opts.trimStart ?? 0;
+  const end = opts.trimEnd;
+  const before: string[] = [];
+  const after: string[] = [];
+  if (start > 0.001) before.push('-ss', start.toFixed(6));
+  if (end !== undefined) {
+    const dur = end - start;
+    if (dur > 0.001) after.push('-t', dur.toFixed(6));
+  }
+  return { before, after };
+}
+
+function buildAudioArgs(input: string, output: string, opts: ConversionOptions): string[] {
+  const { before, after } = buildTrimArgs(opts);
+  const args = [...before, '-i', `input.${input}`];
+  const bitrate = opts.bitrate ?? '128k';
   if (output === 'mp3') args.push('-c:a', 'libmp3lame', '-b:a', bitrate);
   else if (output === 'ogg') args.push('-c:a', 'libvorbis', '-b:a', bitrate);
   else if (output === 'aac') args.push('-c:a', 'aac', '-b:a', bitrate);
   else if (output === 'wav') args.push('-c:a', 'pcm_s16le');
-  args.push(`output.${output}`);
+  args.push(...after, `output.${output}`);
   return args;
 }
 
 function buildVideoArgs(input: string, output: string, opts: ConversionOptions): string[] {
-  const args = ['-i', `input.${input}`];
+  const { before, after } = buildTrimArgs(opts);
+  const args = [...before, '-i', `input.${input}`];
   const scale = opts.resolution ? `-vf scale=${opts.resolution.replace('x', ':')}` : null;
 
   if (output === 'mp3') {
-    // Extract audio only
     args.push('-vn', '-c:a', 'libmp3lame', '-b:a', opts.bitrate ?? '128k');
   } else if (output === 'gif') {
     const fps = opts.frameRate ?? 15;
@@ -75,7 +93,7 @@ function buildVideoArgs(input: string, output: string, opts: ConversionOptions):
     if (output === 'webm') args.push('-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '33', '-c:a', 'libopus');
     if (scale) args.push('-vf', scale.slice(4));
   }
-  args.push(`output.${output}`);
+  args.push(...after, `output.${output}`);
   return args;
 }
 
@@ -84,8 +102,11 @@ export const ffmpegConverter: ConverterPlugin = {
   category: 'audio',
   inputFormats: [...AUDIO_INPUTS, ...VIDEO_INPUTS],
   outputFormats: (input: string): string[] => {
-    if (AUDIO_INPUTS.includes(input)) return AUDIO_OUTPUTS.filter((f) => f !== input);
-    return (VIDEO_OUTPUTS_FROM_VIDEO_OBJ[input] ?? []).filter((f) => f !== input);
+    // 'trim-copy' appended last so it's never the auto-selected default format
+    if (AUDIO_INPUTS.includes(input)) return [...AUDIO_OUTPUTS.filter((f) => f !== input), 'trim-copy'];
+    const videoOuts = VIDEO_OUTPUTS_FROM_VIDEO_OBJ[input];
+    if (videoOuts) return [...videoOuts.filter((f) => f !== input), 'trim-copy'];
+    return [];
   },
   convert: async (
     file: File,
@@ -105,15 +126,25 @@ export const ffmpegConverter: ConverterPlugin = {
     onProgress?.(15);
 
     const inputName = `input.${ext}`;
-    const outputName = `output.${targetFormat}`;
+    // For trim-copy, output keeps the same extension as the source
+    const actualFormat = targetFormat === 'trim-copy' ? ext : targetFormat;
+    const outputName = `output.${actualFormat}`;
 
     await ff.writeFile(inputName, await fetchFile(file));
     onProgress?.(25);
 
-    const isAudio = AUDIO_INPUTS.includes(ext);
-    const args = isAudio
-      ? buildAudioArgs(ext, targetFormat, options.bitrate ?? '128k')
-      : buildVideoArgs(ext, targetFormat, options);
+    let args: string[];
+    if (targetFormat === 'trim-copy') {
+      const { before, after } = buildTrimArgs(options);
+      // -avoid_negative_ts make_zero prevents frozen first segment when
+      // keyframe offset produces negative timestamps (common in MP4 stream copy)
+      args = [...before, '-i', inputName, ...after, '-avoid_negative_ts', 'make_zero', '-c', 'copy', outputName];
+    } else {
+      const isAudio = AUDIO_INPUTS.includes(ext);
+      args = isAudio
+        ? buildAudioArgs(ext, targetFormat, options)
+        : buildVideoArgs(ext, targetFormat, options);
+    }
 
     await ff.exec(args);
     onProgress?.(95);
@@ -123,7 +154,7 @@ export const ffmpegConverter: ConverterPlugin = {
     await ff.deleteFile(outputName);
 
     onProgress?.(100);
-    const mime = MIME[targetFormat] ?? 'application/octet-stream';
+    const mime = MIME[actualFormat] ?? 'application/octet-stream';
     return new Blob([(data as Uint8Array).buffer as ArrayBuffer], { type: mime });
   },
 };

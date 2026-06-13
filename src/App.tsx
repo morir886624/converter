@@ -90,6 +90,7 @@ export default function App() {
     setTargetFormat,
     setOptions,
     cleanExif,
+    trimCopy,
     clearAll,
   } = useConversion();
   const { offlineReady, needRefresh, canInstall, updateServiceWorker, install, close } = usePwa();
@@ -230,6 +231,7 @@ export default function App() {
                       onFormatChange={setTargetFormat}
                       onOptionsChange={setOptions}
                       onCleanExif={cleanExif}
+                      onTrimCopy={trimCopy}
                       onHashFile={handleHashFile}
                     />
                   ))}

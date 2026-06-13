@@ -10,6 +10,9 @@ export interface ConversionOptions {
   delimiter?: string;  // CSV delimiter
   maxWidth?: number;   // px — resize only if larger (image compression)
   mdMode?: 'code' | 'table'; // JSON → md: output as code block or table
+  trimEnabled?: boolean;
+  trimStart?: number;  // seconds
+  trimEnd?: number;    // seconds
 }
 
 export interface FileItem {

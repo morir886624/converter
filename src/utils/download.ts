@@ -16,6 +16,8 @@ const VIRTUAL_EXTENSIONS: Record<string, string> = {
 };
 
 export function replaceExtension(filename: string, newExt: string): string {
+  // trim-copy preserves the original extension
+  if (newExt === 'trim-copy') return filename;
   const dot = filename.lastIndexOf('.');
   const base = dot >= 0 ? filename.slice(0, dot) : filename;
   const ext = VIRTUAL_EXTENSIONS[newExt] ?? newExt;
