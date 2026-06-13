@@ -53,6 +53,7 @@ export function HomePage() {
         />
         <meta property="og:url" content={DOMAIN + '/'} />
         <meta property="og:type" content="website" />
+        <meta name="google-site-verification" content="BVNEd-3B73VwzBLjp_kJgeOXXwEzifAgvu7eZ7rVv8I" />
       </Head>
 
       {/* Hero */}
