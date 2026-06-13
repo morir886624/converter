@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
 import { usePwa } from '../hooks/usePwa';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { HistoryPanel } from '../components/HistoryPanel';
 import { HistoryProvider, useHistoryContext } from '../contexts/HistoryContext';
@@ -57,6 +58,7 @@ function Shell() {
   const { entries, totalSize, historyOpen, setHistoryOpen, downloadEntry, removeEntry, clearAll, downloadAllZip } = useHistoryContext();
   const [pwaVisible, setPwaVisible] = useState(true);
   const location = useLocation();
+  const isOnline = useOnlineStatus();
 
   const handlePwaClose = useCallback(() => {
     setPwaVisible(false);
@@ -68,11 +70,18 @@ function Shell() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors">
 
-      {/* Privacy banner */}
-      <div className="bg-emerald-600 text-white text-center text-xs sm:text-sm py-2 px-3 font-medium leading-snug">
-        <span>🔒 Your files never leave your device</span>
-        <span className="hidden sm:inline"> — all conversions happen in your browser</span>
-      </div>
+      {/* Offline indicator — replaces privacy banner when offline */}
+      {isOnline ? (
+        <div className="bg-emerald-600 text-white text-center text-xs sm:text-sm py-2 px-3 font-medium leading-snug">
+          <span>🔒 Your files never leave your device</span>
+          <span className="hidden sm:inline"> — all conversions happen in your browser</span>
+        </div>
+      ) : (
+        <div className="bg-amber-500 text-white text-center text-xs sm:text-sm py-2 px-3 font-medium leading-snug flex items-center justify-center gap-2">
+          <span aria-hidden>📶</span>
+          <span>Hors ligne — toutes les conversions fonctionnent normalement</span>
+        </div>
+      )}
 
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-4 py-3">

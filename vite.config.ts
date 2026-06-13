@@ -28,7 +28,7 @@ export default defineConfig({
     sitemapPlugin(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['icon.svg', 'ffmpeg/**'],
+      includeAssets: ['icon.svg', 'pwa-192x192.png', 'pwa-512x512.png', 'apple-touch-icon.png', 'ffmpeg/**'],
       manifest: {
         name: 'File Converter',
         short_name: 'Converter',
@@ -39,6 +39,24 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+          {
             src: 'icon.svg',
             sizes: 'any',
             type: 'image/svg+xml',
@@ -47,8 +65,24 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,wasm}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,wasm,json}'],
         maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
+        // Runtime cache for @imgly/background-removal model files fetched from CDN
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/staticimgly\.com\/.*/i,
+            handler: 'CacheFirst' as const,
+            options: {
+              cacheName: 'imgly-models',
+              expiration: {
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
       },
       devOptions: {
         enabled: false,
