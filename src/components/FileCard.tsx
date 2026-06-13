@@ -92,6 +92,7 @@ interface Props {
   onFormatChange: (id: string, fmt: string) => void;
   onOptionsChange: (id: string, opts: Partial<ConversionOptions>) => void;
   onCleanExif: (id: string) => void;
+  onHashFile?: (file: File) => void;
 }
 
 const FORMAT_LABELS: Record<string, string> = {
@@ -194,7 +195,7 @@ function ZipPreview({ blob }: { blob: Blob }) {
 }
 
 export function FileCard({
-  item, onRemove, onConvert, onDownload, onFormatChange, onOptionsChange, onCleanExif,
+  item, onRemove, onConvert, onDownload, onFormatChange, onOptionsChange, onCleanExif, onHashFile,
 }: Props) {
   const isZipExtract = item.targetFormat === 'extract';
   const canConvert = item.status === 'idle' && item.targetFormat !== null;
@@ -372,6 +373,15 @@ export function FileCard({
         {item.status === 'done' && !isZipExtract && (
           <button onClick={() => onConvert(item.id)} className="btn-ghost text-sm px-3">
             ↺ Convert again
+          </button>
+        )}
+        {onHashFile && (
+          <button
+            onClick={() => onHashFile(item.file)}
+            className="btn-ghost text-sm px-3"
+            title="Compute MD5 / SHA-1 / SHA-256"
+          >
+            🔐 Check hash
           </button>
         )}
       </div>

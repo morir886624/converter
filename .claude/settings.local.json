@@ -19,7 +19,12 @@
       "Read(//tmp/**)",
       "Bash(npm init *)",
       "Bash(cp *)",
-      "Read(//c/Users/lenovo/AppData/Local/Temp/**)"
+      "Read(//c/Users/lenovo/AppData/Local/Temp/**)",
+      "Bash(*)",
+      "PowerShell(node -e \"require\\('playwright'\\)\" 2>&1; if \\($LASTEXITCODE -eq 0\\) { \"Playwright available\" } else { \"Playwright not installed\" })",
+      "PowerShell(npm install *)",
+      "PowerShell(npx playwright install chromium 2>&1 | Select-Object -Last 5)",
+      "PowerShell(npm list *)"
     ]
   }
 }

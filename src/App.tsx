@@ -11,8 +11,9 @@ const PdfTools = lazy(() => import('./pdf-tools/PdfTools').then((m) => ({ defaul
 const ImageTools = lazy(() => import('./image-tools/ImageTools').then((m) => ({ default: m.ImageTools })));
 const WatermarkTool = lazy(() => import('./watermark/WatermarkTool').then((m) => ({ default: m.WatermarkTool })));
 const FaviconGenerator = lazy(() => import('./favicon-generator/FaviconTool').then((m) => ({ default: m.FaviconGenerator })));
+const ChecksumTool = lazy(() => import('./checksum/ChecksumTool').then((m) => ({ default: m.ChecksumTool })));
 
-type AppTab = 'converter' | 'pdf' | 'image' | 'watermark' | 'favicon';
+type AppTab = 'converter' | 'pdf' | 'image' | 'watermark' | 'favicon' | 'checksum';
 
 function GlobalProgress({ files }: { files: ReturnType<typeof useConversion>['files'] }) {
   const active = files.filter((f) => f.status === 'converting' || f.status === 'done');
@@ -94,6 +95,12 @@ export default function App() {
   const { offlineReady, needRefresh, canInstall, updateServiceWorker, install, close } = usePwa();
   const [tab, setTab] = useState<AppTab>('converter');
   const [pwaVisible, setPwaVisible] = useState(true);
+  const [checksumFile, setChecksumFile] = useState<File | null>(null);
+
+  const handleHashFile = useCallback((file: File) => {
+    setChecksumFile(file);
+    setTab('checksum');
+  }, []);
 
   // Clipboard paste → add image to converter
   useEffect(() => {
@@ -161,8 +168,9 @@ export default function App() {
             { id: 'converter', icon: '🔄', label: 'Converter',   span: 'col-span-2' },
             { id: 'pdf',       icon: '📄', label: 'PDF Tools',   span: 'col-span-2' },
             { id: 'image',     icon: '✨', label: 'Image Tools', span: 'col-span-2' },
-            { id: 'watermark', icon: '💧', label: 'Watermark',   span: 'col-span-3' },
-            { id: 'favicon',   icon: '🖼️', label: 'Favicon',     span: 'col-span-3' },
+            { id: 'watermark', icon: '💧', label: 'Watermark',   span: 'col-span-2' },
+            { id: 'favicon',   icon: '🖼️', label: 'Favicon',     span: 'col-span-2' },
+            { id: 'checksum',  icon: '🔐', label: 'Checksum',    span: 'col-span-2' },
           ] as { id: AppTab; icon: string; label: string; span: string }[]).map(({ id, icon, label, span }) => (
             <button
               key={id}
@@ -222,6 +230,7 @@ export default function App() {
                       onFormatChange={setTargetFormat}
                       onOptionsChange={setOptions}
                       onCleanExif={cleanExif}
+                      onHashFile={handleHashFile}
                     />
                   ))}
                 </div>
@@ -270,6 +279,7 @@ export default function App() {
               <FaviconGenerator />
             </div>
           )}
+          {tab === 'checksum' && <ChecksumTool initialFile={checksumFile} />}
         </Suspense>
       </main>
 
