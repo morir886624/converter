@@ -34,6 +34,42 @@ async function detectCanvasFormats(): Promise<string[]> {
   return supported;
 }
 
+// SVG → raster: parse viewBox to set explicit pixel dimensions before drawing
+async function svgToImage(file: File, targetExt: string, maxWidth?: number): Promise<Blob> {
+  const text = await file.text();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(text, 'image/svg+xml');
+  const svgEl = doc.documentElement;
+  const vb = svgEl.getAttribute('viewBox')?.split(/[\s,]+/).map(Number);
+  const svgW = parseFloat(svgEl.getAttribute('width') ?? '') || vb?.[2] || 800;
+  const svgH = parseFloat(svgEl.getAttribute('height') ?? '') || vb?.[3] || 600;
+  svgEl.setAttribute('width', String(Math.round(svgW)));
+  svgEl.setAttribute('height', String(Math.round(svgH)));
+  const blob = new Blob([new XMLSerializer().serializeToString(doc)], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  let w = Math.round(svgW);
+  let h = Math.round(svgH);
+  if (maxWidth && w > maxWidth) { h = Math.round(h * (maxWidth / w)); w = maxWidth; }
+  return new Promise<Blob>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d')!;
+      if (targetExt === 'jpg') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h); }
+      ctx.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(
+        (b) => b ? resolve(b) : reject(new Error(`${targetExt} export failed`)),
+        MIME[targetExt] ?? 'image/png',
+        0.92,
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to render SVG')); };
+    img.src = url;
+  });
+}
+
 export function loadImage(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -157,9 +193,10 @@ async function pdfToImages(
 export const imageConverter: ConverterPlugin = {
   name: 'images',
   category: 'image',
-  inputFormats: ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'gif', 'avif', 'pdf'],
+  inputFormats: ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'gif', 'avif', 'pdf', 'svg'],
   outputFormats: async (input: string) => {
     if (input === 'pdf') return ['jpg', 'png', 'webp'];
+    if (input === 'svg') return ['png', 'jpg', 'webp'];
     const supported = await detectCanvasFormats();
     // Keep 'png' even when input is already png: allows lossless resize without format change.
     return [...supported.filter((f) => f !== input || f === 'png'), 'pdf', 'md'];
@@ -173,6 +210,12 @@ export const imageConverter: ConverterPlugin = {
     const input = file.name.split('.').pop()?.toLowerCase() ?? '';
     const quality = options.quality ?? 90;
     if (input === 'pdf') return pdfToImages(file, targetFormat, quality, onProgress);
+    if (input === 'svg') {
+      onProgress?.(50);
+      const result = await svgToImage(file, targetFormat, options.maxWidth);
+      onProgress?.(100);
+      return result;
+    }
     if (targetFormat === 'pdf') return imageOrImagesToPdf(file);
     if (targetFormat === 'md') return imageToMarkdown(file, onProgress);
     onProgress?.(50);

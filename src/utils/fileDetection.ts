@@ -2,7 +2,7 @@ import type { FileCategory } from '../types';
 
 const EXT_CATEGORY: Record<string, FileCategory> = {
   jpg: 'image', jpeg: 'image', png: 'image', webp: 'image',
-  bmp: 'image', gif: 'image', avif: 'image', tiff: 'image', tif: 'image',
+  bmp: 'image', gif: 'image', avif: 'image', tiff: 'image', tif: 'image', svg: 'image',
   heic: 'image', heif: 'image',
   mp3: 'audio', wav: 'audio', ogg: 'audio', aac: 'audio', flac: 'audio', m4a: 'audio',
   mp4: 'video', webm: 'video', avi: 'video', mov: 'video', mkv: 'video',

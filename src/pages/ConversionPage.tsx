@@ -32,6 +32,14 @@ export function ConversionPage({ config }: Props) {
         <meta property="og:image" content={`${DOMAIN}/apple-touch-icon.png`} />
         <script type="application/ld+json">{JSON.stringify({
           '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: DOMAIN + '/' },
+            { '@type': 'ListItem', position: 2, name: `${config.from.toUpperCase()} → ${config.to.toUpperCase()}`, item: canonical },
+          ],
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
           '@type': 'FAQPage',
           mainEntity: faqs.map((f) => ({
             '@type': 'Question',

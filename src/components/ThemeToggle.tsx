@@ -1,14 +1,23 @@
+import type { ThemeMode } from '../hooks/useTheme';
+
 interface Props {
-  dark: boolean;
-  onToggle: () => void;
+  mode: ThemeMode;
+  onCycle: () => void;
 }
 
-export function ThemeToggle({ dark, onToggle }: Props) {
+const ICONS: Record<ThemeMode, string> = { system: '🖥️', dark: '🌙', light: '☀️' };
+const LABELS: Record<ThemeMode, string> = {
+  system: 'System theme — click for dark mode',
+  dark:   'Dark mode — click for light mode',
+  light:  'Light mode — click for system theme',
+};
+
+export function ThemeToggle({ mode, onCycle }: Props) {
   return (
     <button
-      onClick={onToggle}
-      aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-      title={dark ? 'Light mode' : 'Dark mode'}
+      onClick={onCycle}
+      aria-label={LABELS[mode]}
+      title={LABELS[mode]}
       className="
         flex items-center justify-center
         w-11 h-11 shrink-0
@@ -20,7 +29,7 @@ export function ThemeToggle({ dark, onToggle }: Props) {
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500
       "
     >
-      {dark ? '☀️' : '🌙'}
+      {ICONS[mode]}
     </button>
   );
 }

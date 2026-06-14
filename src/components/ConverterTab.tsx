@@ -92,6 +92,20 @@ export function ConverterTab({ preferredFormat, onHashFile }: Props) {
   const hasDone = doneFiles.length > 0;
   const hasIdle = files.some((f) => (f.status === 'idle' || f.status === 'cancelled') && f.targetFormat);
 
+  // Enter key → convert all (skips when focus is on interactive elements)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON' || (e.target as HTMLElement).isContentEditable) return;
+      if (!hasIdle) return;
+      e.preventDefault();
+      convertAll();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [hasIdle, convertAll]);
+
   return (
     <>
       {/* Screen reader live region — announces conversion completions */}

@@ -196,7 +196,43 @@ export const conversions: ConversionDef[] = [
     title: 'Convertir WAV en OGG gratuitement',
     description: 'Compressez vos fichiers audio WAV non compressés en OGG Vorbis, format libre et efficace idéal pour les jeux vidéo et applications web.',
   },
+  {
+    slug: 'pdf-en-png',
+    from: 'pdf',
+    to: 'png',
+    category: 'image',
+    title: 'Convertir PDF en images PNG gratuitement',
+    description: 'Extrayez chaque page d\'un PDF en image PNG sans perte, directement dans votre navigateur. Idéal pour obtenir des images haute qualité avec transparence.',
+  },
+  {
+    slug: 'svg-en-png',
+    from: 'svg',
+    to: 'png',
+    category: 'image',
+    title: 'Convertir SVG en PNG gratuitement',
+    description: 'Convertissez vos fichiers SVG vectoriels en PNG raster pour les utiliser dans des documents, présentations ou plateformes ne supportant pas le format SVG.',
+    specificFaq: {
+      question: 'La transparence du SVG est-elle conservée dans le PNG ?',
+      answer: 'Oui. Le PNG supporte la transparence (canal alpha) et la conserve lors de la conversion depuis un SVG avec fond transparent.',
+    },
+  },
   // ── Audio ─────────────────────────────────────────────────────────────────
+  {
+    slug: 'flac-en-mp3',
+    from: 'flac',
+    to: 'mp3',
+    category: 'audio',
+    title: 'Convertir FLAC en MP3 gratuitement',
+    description: 'Compressez vos fichiers audio FLAC (sans perte) en MP3 pour réduire leur taille tout en conservant une excellente qualité. Conversion 100 % locale, sans upload.',
+  },
+  {
+    slug: 'm4a-en-mp3',
+    from: 'm4a',
+    to: 'mp3',
+    category: 'audio',
+    title: 'Convertir M4A en MP3 gratuitement',
+    description: 'Transformez vos fichiers audio M4A (format Apple iTunes) en MP3 universel, compatible avec tous les lecteurs audio et plateformes de streaming.',
+  },
   {
     slug: 'mp4-en-mp3',
     from: 'mp4',

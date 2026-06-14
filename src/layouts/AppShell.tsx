@@ -53,7 +53,7 @@ function PwaBanners({
 }
 
 function Shell() {
-  const { dark, toggleTheme } = useTheme();
+  const { dark, mode, cycleTheme } = useTheme();
   const { offlineReady, needRefresh, canInstall, updateServiceWorker, install, close } = usePwa();
   const { entries, totalSize, historyOpen, setHistoryOpen, downloadEntry, removeEntry, clearAll, downloadAllZip } = useHistoryContext();
   const [pwaVisible, setPwaVisible] = useState(true);
@@ -116,7 +116,7 @@ function Shell() {
                 </span>
               )}
             </button>
-            <ThemeToggle dark={dark} onToggle={toggleTheme} />
+            <ThemeToggle mode={mode} onCycle={cycleTheme} />
           </div>
         </div>
       </header>

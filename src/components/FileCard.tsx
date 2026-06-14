@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { FileItem, ConversionOptions } from '../types';
 import { CATEGORY_ICON } from '../utils/fileDetection';
-import { formatBytes } from '../utils/download';
+import { formatBytes, replaceExtension } from '../utils/download';
 import { ProgressBar } from './ProgressBar';
 import { Preview } from './Preview';
 import { ConversionOptions as OptionsPanel } from './ConversionOptions';
@@ -102,7 +102,7 @@ const FORMAT_LABELS: Record<string, string> = {
   jpg: 'JPG', jpeg: 'JPG', png: 'PNG', webp: 'WebP',
   bmp: 'BMP', gif: 'GIF', avif: 'AVIF',
   'png-nobg': 'Remove background → PNG',
-  'jpg-clean': 'Supprimer l\'EXIF → JPEG',
+  'jpg-clean': 'Remove EXIF → JPEG',
   'trim-copy': '✂ Trim only (copy)',
   mp3: 'MP3', wav: 'WAV', ogg: 'OGG', aac: 'AAC',
   mp4: 'MP4', webm: 'WebM',
@@ -201,14 +201,40 @@ function ZipPreview({ blob }: { blob: Blob }) {
   );
 }
 
+const HAS_SHARE = typeof navigator !== 'undefined' && 'share' in navigator;
+const HAS_CLIPBOARD = typeof window !== 'undefined' && 'ClipboardItem' in window && !!navigator.clipboard?.write;
+
 export function FileCard({
   item, onRemove, onConvert, onCancel, onDownload, onFormatChange, onOptionsChange, onCleanExif, onTrimCopy, onHashFile,
 }: Props) {
+  const [copied, setCopied] = useState(false);
+
   const isZipExtract = item.targetFormat === 'extract';
   const canConvert = (item.status === 'idle' || item.status === 'cancelled') && item.targetFormat !== null;
   const canDownload = item.status === 'done' && item.result !== null && !isZipExtract;
   const isBig = (item.category === 'video' || item.category === 'audio') && item.size > 150 * 1024 * 1024;
   const isVeryLarge = item.size > 500 * 1024 * 1024;
+  const isImageResult = canDownload && !!item.result?.type.startsWith('image/') && item.result?.type !== 'image/gif';
+
+  const handleShare = async () => {
+    if (!item.result || !item.targetFormat) return;
+    const shareFile = new File(
+      [item.result],
+      replaceExtension(item.name, item.targetFormat),
+      { type: item.result.type },
+    );
+    if (!navigator.canShare?.({ files: [shareFile] })) return;
+    try { await navigator.share({ files: [shareFile] }); } catch { /* user cancelled */ }
+  };
+
+  const handleCopy = async () => {
+    if (!item.result) return;
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ [item.result.type]: item.result })]);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch { /* clipboard blocked */ }
+  };
 
   return (
     <article className="
@@ -386,6 +412,11 @@ export function FileCard({
             Convert
           </button>
         )}
+        {item.status === 'error' && item.targetFormat && !isZipExtract && (
+          <button onClick={() => onConvert(item.id)} className="btn-primary text-sm px-4">
+            ↺ Retry
+          </button>
+        )}
         {isZipExtract && item.status === 'idle' && (
           <button onClick={() => onConvert(item.id)} className="btn-primary text-sm px-4">
             Analyze
@@ -394,6 +425,16 @@ export function FileCard({
         {canDownload && (
           <button onClick={() => onDownload(item.id)} className="btn-success text-sm px-4">
             ⬇ Download
+          </button>
+        )}
+        {HAS_SHARE && canDownload && (
+          <button onClick={handleShare} className="btn-ghost text-sm px-3" title="Share file">
+            Share
+          </button>
+        )}
+        {HAS_CLIPBOARD && isImageResult && (
+          <button onClick={handleCopy} className="btn-ghost text-sm px-3">
+            {copied ? '✓ Copied' : '📋 Copy'}
           </button>
         )}
         {item.status === 'done' && !isZipExtract && (

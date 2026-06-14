@@ -3,7 +3,7 @@ export type FileCategory = 'image' | 'audio' | 'video' | 'document' | 'data' | '
 // All formats the converter registry can accept as input or produce as output.
 // Kept here as a single source of truth so conversions.config.ts catches typos at compile time.
 export type KnownInputFormat =
-  | 'jpg' | 'jpeg' | 'png' | 'webp' | 'avif' | 'bmp' | 'gif' | 'tiff' | 'tif'
+  | 'jpg' | 'jpeg' | 'png' | 'webp' | 'avif' | 'bmp' | 'gif' | 'tiff' | 'tif' | 'svg'
   | 'heic' | 'heif'
   | 'mp3' | 'wav' | 'ogg' | 'aac' | 'flac' | 'm4a'
   | 'mp4' | 'webm' | 'avi' | 'mov' | 'mkv'
