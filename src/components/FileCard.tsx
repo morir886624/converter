@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FileItem, ConversionOptions } from '../types';
 import { CATEGORY_ICON } from '../utils/fileDetection';
 import { formatBytes, replaceExtension } from '../utils/download';

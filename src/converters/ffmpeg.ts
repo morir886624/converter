@@ -22,7 +22,7 @@ async function fetchWasmWithProgress(url: string): Promise<string> {
     return URL.createObjectURL(new Blob([blob], { type: 'application/wasm' }));
   }
   const reader = resp.body.getReader();
-  const chunks: Uint8Array[] = [];
+  const chunks: Uint8Array<ArrayBuffer>[] = [];
   let received = 0;
   while (true) {
     const { done, value } = await reader.read();
