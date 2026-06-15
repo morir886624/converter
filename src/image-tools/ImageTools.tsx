@@ -3,14 +3,16 @@ import { ImageBgRemoval } from './ImageBgRemoval';
 import { ImageCompress } from './ImageCompress';
 import { ImageResize } from './ImageResize';
 import { ImageExifCleaner } from './ImageExifCleaner';
+import { ImageCrop } from './ImageCrop';
 
-type Tab = 'bg-removal' | 'compress' | 'resize' | 'exif';
+type Tab = 'bg-removal' | 'compress' | 'resize' | 'exif' | 'crop';
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'bg-removal', label: 'Remove background', icon: '✨' },
   { id: 'compress',   label: 'Compress',           icon: '🗜️' },
   { id: 'resize',     label: 'Resize',             icon: '↔️' },
   { id: 'exif',       label: 'EXIF / Privacy',      icon: '🔒' },
+  { id: 'crop',       label: 'Crop',               icon: '✂️' },
 ];
 
 export function ImageTools() {
@@ -43,6 +45,7 @@ export function ImageTools() {
         {tab === 'compress'   && <ImageCompress />}
         {tab === 'resize'     && <ImageResize />}
         {tab === 'exif'       && <ImageExifCleaner />}
+        {tab === 'crop'       && <ImageCrop />}
       </div>
     </div>
   );

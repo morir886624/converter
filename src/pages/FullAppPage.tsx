@@ -11,8 +11,10 @@ const WatermarkTool = lazy(() => import('../watermark/WatermarkTool').then((m) =
 const FaviconGenerator = lazy(() => import('../favicon-generator/FaviconTool').then((m) => ({ default: m.FaviconGenerator })));
 const ChecksumTool = lazy(() => import('../checksum/ChecksumTool').then((m) => ({ default: m.ChecksumTool })));
 const OcrTool = lazy(() => import('../ocr/OcrTool').then((m) => ({ default: m.OcrTool })));
+const QrTool = lazy(() => import('../qr/QrTool').then((m) => ({ default: m.QrTool })));
+const FormatterTool = lazy(() => import('../formatter/FormatterTool').then((m) => ({ default: m.FormatterTool })));
 
-type AppTab = 'converter' | 'pdf' | 'image' | 'watermark' | 'favicon' | 'checksum' | 'ocr';
+type AppTab = 'converter' | 'pdf' | 'image' | 'watermark' | 'favicon' | 'checksum' | 'ocr' | 'qr' | 'formatter';
 
 const TABS: { id: AppTab; icon: string; label: string }[] = [
   { id: 'converter', icon: '🔄', label: 'Converter'   },
@@ -22,6 +24,8 @@ const TABS: { id: AppTab; icon: string; label: string }[] = [
   { id: 'favicon',   icon: '🖼️', label: 'Favicon'     },
   { id: 'checksum',  icon: '🔐', label: 'Checksum'    },
   { id: 'ocr',       icon: '🔍', label: 'OCR'         },
+  { id: 'qr',        icon: '◼',  label: 'QR Code'     },
+  { id: 'formatter', icon: '{ }', label: 'Formatter'  },
 ];
 
 export function FullAppPage() {
@@ -81,8 +85,8 @@ export function FullAppPage() {
 
         <ErrorBoundary>
           <Suspense fallback={<div className="flex items-center justify-center py-16 text-slate-400 text-sm">Loading…</div>}>
-            {tab === 'pdf' && <PdfTools />}
-            {tab === 'image' && <ImageTools />}
+            {tab === 'pdf'       && <PdfTools />}
+            {tab === 'image'     && <ImageTools />}
             {tab === 'watermark' && (
               <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
                 <WatermarkTool />
@@ -93,8 +97,10 @@ export function FullAppPage() {
                 <FaviconGenerator />
               </div>
             )}
-            {tab === 'checksum' && <ChecksumTool initialFile={checksumFile} />}
-            {tab === 'ocr' && <OcrTool />}
+            {tab === 'checksum'  && <ChecksumTool initialFile={checksumFile} />}
+            {tab === 'ocr'       && <OcrTool />}
+            {tab === 'qr'        && <QrTool />}
+            {tab === 'formatter' && <FormatterTool />}
           </Suspense>
         </ErrorBoundary>
       </main>

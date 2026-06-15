@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { PdfMerge } from './PdfMerge';
 import { PdfSplit } from './PdfSplit';
 import { PdfCompress } from './PdfCompress';
+import { PdfRotate } from './PdfRotate';
 
-type Tab = 'merge' | 'split' | 'compress';
+type Tab = 'merge' | 'split' | 'compress' | 'rotate';
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: 'merge', label: 'Merge', icon: '🔗' },
-  { id: 'split', label: 'Split', icon: '✂️' },
+  { id: 'merge',    label: 'Merge',    icon: '🔗' },
+  { id: 'split',    label: 'Split',    icon: '✂️' },
   { id: 'compress', label: 'Compress', icon: '🗜️' },
+  { id: 'rotate',   label: 'Rotate',   icon: '🔄' },
 ];
 
 export function PdfTools() {
@@ -36,9 +38,10 @@ export function PdfTools() {
 
       {/* Tab content */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
-        {tab === 'merge' && <PdfMerge />}
-        {tab === 'split' && <PdfSplit />}
+        {tab === 'merge'    && <PdfMerge />}
+        {tab === 'split'    && <PdfSplit />}
         {tab === 'compress' && <PdfCompress />}
+        {tab === 'rotate'   && <PdfRotate />}
       </div>
     </div>
   );
