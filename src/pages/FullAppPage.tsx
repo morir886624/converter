@@ -150,6 +150,20 @@ export function FullAppPage() {
         <meta property="og:url" content={DOMAIN + '/app'} />
         <meta property="og:type" content="website" />
         <meta property="og:image" content={DOMAIN + '/apple-touch-icon.png'} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Full File Converter — File Converter App" />
+        <meta name="twitter:description" content="50+ conversions — images, PDF, audio, video, data. OCR, QR Code, Watermark, Favicon. 100% in your browser." />
+        <meta name="twitter:image" content={DOMAIN + '/apple-touch-icon.png'} />
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: 'File Converter',
+          url: DOMAIN + '/app',
+          applicationCategory: 'UtilitiesApplication',
+          operatingSystem: 'Web',
+          description: 'Convert images, PDF, audio, video and data files directly in your browser. OCR, QR Code, Watermark, Favicon, Checksum — 100% local, no files ever uploaded.',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        })}</script>
       </Head>
 
       <div className="py-4 sm:py-6">

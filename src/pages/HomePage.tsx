@@ -63,7 +63,29 @@ export function HomePage() {
         <meta property="og:url" content={DOMAIN + '/'} />
         <meta property="og:type" content="website" />
         <meta property="og:image" content={DOMAIN + '/apple-touch-icon.png'} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="File Converter — Free file conversion tool" />
+        <meta name="twitter:description" content="50+ conversions: images, PDF, audio, video and data — 100% in your browser, no files uploaded." />
+        <meta name="twitter:image" content={DOMAIN + '/apple-touch-icon.png'} />
         <meta name="google-site-verification" content="BVNEd-3B73VwzBLjp_kJgeOXXwEzifAgvu7eZ7rVv8I" />
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'File Converter',
+          url: DOMAIN,
+          description: 'Free online file converter — images, PDF, audio, video and data. All conversions happen in your browser, no files ever uploaded.',
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'SoftwareApplication',
+          name: 'File Converter',
+          applicationCategory: 'UtilitiesApplication',
+          operatingSystem: 'Web',
+          url: DOMAIN,
+          description: 'Free browser-based file converter — images, PDF, audio, video and data. 100% private, no files ever uploaded.',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+          featureList: 'Image conversion, PDF tools, Audio conversion, Video conversion, Data conversion, OCR, QR Code, Watermark, Favicon generator, Checksum',
+        })}</script>
       </Head>
 
       {/* Hero */}
