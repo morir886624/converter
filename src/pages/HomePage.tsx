@@ -13,6 +13,7 @@ const ALL_CATEGORIES = Object.keys(CATEGORY_LABEL) as ConversionCategory[];
 
 export function HomePage() {
   const [query, setQuery] = useState('');
+  const [showTools, setShowTools] = useState(true);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -90,15 +91,36 @@ export function HomePage() {
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-400 dark:focus:ring-brand-500 transition-shadow"
           />
         </div>
-        {query && (
-          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-            {totalResults === 0 ? 'No results.' : `${totalResults} conversion${totalResults > 1 ? 's' : ''} found`}
-          </p>
-        )}
+      </div>
+
+      {/* Toggle button */}
+      <div className="max-w-4xl mx-auto px-4 mb-4 flex items-center justify-between">
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          {!showTools
+            ? 'Conversions hidden'
+            : query
+            ? `${totalResults} result${totalResults !== 1 ? 's' : ''}`
+            : `${totalResults} conversion${totalResults !== 1 ? 's' : ''} available`}
+        </p>
+        <button
+          onClick={() => setShowTools((v) => !v)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className={`w-3.5 h-3.5 transition-transform duration-200 ${showTools ? 'rotate-0' : 'rotate-180'}`}
+            aria-hidden
+          >
+            <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06z" clipRule="evenodd" />
+          </svg>
+          {showTools ? 'Hide tools' : 'Show tools'}
+        </button>
       </div>
 
       {/* Conversion grid by category */}
-      <div className="max-w-4xl mx-auto px-4 pb-12 space-y-8">
+      <div className={`max-w-4xl mx-auto px-4 pb-12 space-y-8 ${showTools ? '' : 'hidden'}`}>
         {ALL_CATEGORIES.map((cat) => {
           const items = grouped.get(cat) ?? [];
           if (items.length === 0) return null;
