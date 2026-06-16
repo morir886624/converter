@@ -1,4 +1,4 @@
-import { useState, useCallback, lazy, Suspense } from 'react';
+import { useCallback, useState, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Head } from 'vite-react-ssg';
 import { DOMAIN } from '../conversions.config';
@@ -14,30 +14,127 @@ const OcrTool = lazy(() => import('../ocr/OcrTool').then((m) => ({ default: m.Oc
 const QrTool = lazy(() => import('../qr/QrTool').then((m) => ({ default: m.QrTool })));
 const FormatterTool = lazy(() => import('../formatter/FormatterTool').then((m) => ({ default: m.FormatterTool })));
 
-type AppTab = 'converter' | 'pdf' | 'image' | 'watermark' | 'favicon' | 'checksum' | 'ocr' | 'qr' | 'formatter';
+export type AppTab = 'converter' | 'pdf' | 'image' | 'watermark' | 'favicon' | 'checksum' | 'ocr' | 'qr' | 'formatter';
 
-const TABS: { id: AppTab; icon: string; label: string }[] = [
-  { id: 'converter', icon: '🔄', label: 'Converter'   },
-  { id: 'pdf',       icon: '📄', label: 'PDF Tools'   },
-  { id: 'image',     icon: '✨', label: 'Image Tools' },
-  { id: 'watermark', icon: '💧', label: 'Watermark'   },
-  { id: 'favicon',   icon: '🖼️', label: 'Favicon'     },
-  { id: 'checksum',  icon: '🔐', label: 'Checksum'    },
-  { id: 'ocr',       icon: '🔍', label: 'OCR'         },
-  { id: 'qr',        icon: '◼',  label: 'QR Code'     },
-  { id: 'formatter', icon: '{ }', label: 'Formatter'  },
-];
+const USAGE_GUIDES: Record<AppTab, { title: string; steps: string[] }> = {
+  converter: {
+    title: 'How to convert a file',
+    steps: [
+      'Drop one or more files into the zone, or click to browse your files.',
+      'Select the output format from the dropdown on each file card.',
+      'Click Convert. The file is processed entirely in your browser — nothing is uploaded.',
+      'Download each file individually, or use Download All to get everything as a ZIP.',
+    ],
+  },
+  pdf: {
+    title: 'How to use PDF Tools',
+    steps: [
+      'Merge: add your PDFs, drag them to reorder, then click Merge to combine them into a single file.',
+      'Split: enter page ranges like "1-3, 5, 8-10" to extract specific pages as separate PDFs or a ZIP.',
+      'Compress: reduces file size by rasterizing pages — note that text becomes non-selectable in the output.',
+    ],
+  },
+  image: {
+    title: 'How to use Image Tools',
+    steps: [
+      'Background Removal: upload a photo and AI instantly removes the background, entirely in your browser.',
+      'Compression: adjust the quality slider to reduce file size while keeping acceptable visual quality.',
+      'Resize: set new width and height values, then download the resized image.',
+      'Crop: draw a selection rectangle over the area you want to keep, then download.',
+      'EXIF Cleaner: drop images to strip all metadata (GPS location, camera model, timestamps) before sharing.',
+    ],
+  },
+  watermark: {
+    title: 'How to add a watermark',
+    steps: [
+      'Upload the image or PDF you want to watermark.',
+      'Type your watermark text, or upload a logo image to use instead.',
+      'Adjust position, opacity, size and rotation to your liking.',
+      'Click Download to save your watermarked file.',
+    ],
+  },
+  favicon: {
+    title: 'How to generate a favicon',
+    steps: [
+      'Upload a square image — 512×512 px or larger is recommended for best quality.',
+      'Click Generate to create all standard favicon sizes (.ico, .png, manifest icons).',
+      'Download the ZIP and place the files in the root directory of your website.',
+      'Add the provided HTML <link> tags inside your <head> to activate the favicons.',
+    ],
+  },
+  checksum: {
+    title: 'How to verify a file checksum',
+    steps: [
+      'Drop the file you want to verify — SHA-256, MD5 and SHA-1 hashes are computed instantly in your browser.',
+      'Compare the displayed hash to the one provided by the original source.',
+      'Or paste the expected hash into the comparison field — a green checkmark confirms the file is authentic and unmodified.',
+    ],
+  },
+  ocr: {
+    title: 'How to extract text from an image or PDF',
+    steps: [
+      'Upload a scanned image (PNG, JPG, WEBP…) or a PDF containing scanned pages.',
+      'Select the document language for improved recognition accuracy.',
+      'Click Extract text — the tool reads the image and outputs all detected text.',
+      'Copy the result or download it as a .txt file.',
+    ],
+  },
+  qr: {
+    title: 'How to create a QR code',
+    steps: [
+      'Type a URL or any text in the input field.',
+      'Optionally adjust size, foreground and background colors.',
+      'Your QR code is generated live as you type — no button needed.',
+      'Click Download PNG or Download SVG to save it and share or print it anywhere.',
+    ],
+  },
+  formatter: {
+    title: 'How to format code',
+    steps: [
+      'Paste your code directly into the editor, or drop a file (JSON, YAML, XML, SQL, HTML…).',
+      'The formatter auto-detects the language and applies correct indentation and syntax highlighting.',
+      'Use the Copy button to grab the formatted output.',
+      'Ideal for debugging minified data or making config files human-readable.',
+    ],
+  },
+};
+
+function UsageGuide({ tab }: { tab: AppTab }) {
+  const guide = USAGE_GUIDES[tab];
+  return (
+    <div className="mt-6 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">
+        <span aria-hidden>💡</span>
+        {guide.title}
+      </h2>
+      <ol className="space-y-2">
+        {guide.steps.map((step, i) => (
+          <li key={i} className="flex gap-2.5 text-xs text-slate-600 dark:text-slate-300 leading-snug">
+            <span className="shrink-0 mt-0.5 flex items-center justify-center w-4 h-4 rounded-full bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 font-bold text-[10px]">
+              {i + 1}
+            </span>
+            {step}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
 
 export function FullAppPage() {
-  const [tab, setTab] = useState<AppTab>('converter');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = ((searchParams.get('tab') as AppTab) || 'converter');
   const [checksumFile, setChecksumFile] = useState<File | null>(null);
-  const [searchParams] = useSearchParams();
   const preferredFormat = searchParams.get('to') ?? undefined;
 
   const handleHashFile = useCallback((file: File) => {
     setChecksumFile(file);
-    setTab('checksum');
-  }, []);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('tab', 'checksum');
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
 
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-4">
@@ -55,30 +152,7 @@ export function FullAppPage() {
         <meta property="og:image" content={DOMAIN + '/apple-touch-icon.png'} />
       </Head>
 
-      {/* Tab bar — scrollable on mobile, flex row on sm+ */}
-      <div className="pt-4">
-        <div className="-mx-3 sm:mx-0 overflow-x-auto scrollbar-hide px-3 sm:px-0">
-          <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-max sm:w-auto min-w-full sm:min-w-0">
-            {TABS.map(({ id, icon, label }) => (
-              <button
-                key={id}
-                onClick={() => setTab(id)}
-                className={`shrink-0 sm:flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 px-3 sm:px-2 py-2 rounded-lg text-[11px] sm:text-sm font-medium transition-colors whitespace-nowrap ${
-                  tab === id
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                }`}
-              >
-                <span aria-hidden className="text-base leading-none">{icon}</span>
-                <span>{label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Tab content */}
-      <main className="py-4 sm:py-6">
+      <div className="py-4 sm:py-6">
         {tab === 'converter' && (
           <ConverterTab preferredFormat={preferredFormat} onHashFile={handleHashFile} />
         )}
@@ -103,7 +177,9 @@ export function FullAppPage() {
             {tab === 'formatter' && <FormatterTool />}
           </Suspense>
         </ErrorBoundary>
-      </main>
+
+        <UsageGuide tab={tab} />
+      </div>
     </div>
   );
 }

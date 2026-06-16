@@ -1,11 +1,24 @@
 import { useCallback, useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useSearchParams } from 'react-router-dom';
+import type { AppTab } from '../pages/FullAppPage';
 import { useTheme } from '../hooks/useTheme';
 import { usePwa } from '../hooks/usePwa';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { HistoryPanel } from '../components/HistoryPanel';
 import { HistoryProvider, useHistoryContext } from '../contexts/HistoryContext';
+
+const NAV_TOOLS: { id: AppTab; icon: string; label: string }[] = [
+  { id: 'converter', icon: '🔄',  label: 'Converter'   },
+  { id: 'pdf',       icon: '📄',  label: 'PDF Tools'   },
+  { id: 'image',     icon: '✨',  label: 'Image Tools' },
+  { id: 'watermark', icon: '💧',  label: 'Watermark'   },
+  { id: 'favicon',   icon: '🖼️',  label: 'Favicon'     },
+  { id: 'checksum',  icon: '🔐',  label: 'Checksum'    },
+  { id: 'ocr',       icon: '🔍',  label: 'OCR'         },
+  { id: 'qr',        icon: '◼',   label: 'QR Code'     },
+  { id: 'formatter', icon: '{ }', label: 'Formatter'   },
+];
 
 function PwaBanners({
   offlineReady,
@@ -58,7 +71,12 @@ function Shell() {
   const { entries, totalSize, historyOpen, setHistoryOpen, downloadEntry, removeEntry, clearAll, downloadAllZip } = useHistoryContext();
   const [pwaVisible, setPwaVisible] = useState(true);
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const isOnline = useOnlineStatus();
+
+  const activeTab: AppTab | null = location.pathname === '/app'
+    ? ((searchParams.get('tab') as AppTab) ?? 'converter')
+    : null;
 
   const handlePwaClose = useCallback(() => {
     setPwaVisible(false);
@@ -120,6 +138,29 @@ function Shell() {
           </div>
         </div>
       </header>
+
+      {/* Tools nav */}
+      <nav
+        aria-label="Tools"
+        className="border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-x-auto scrollbar-hide"
+      >
+        <div className="max-w-4xl mx-auto px-2 flex">
+          {NAV_TOOLS.map(({ id, icon, label }) => (
+            <Link
+              key={id}
+              to={`/app?tab=${id}`}
+              className={`flex flex-col items-center gap-0.5 px-3 py-2.5 text-[11px] font-medium whitespace-nowrap border-b-2 transition-colors ${
+                activeTab === id
+                  ? 'border-brand-500 text-brand-600 dark:text-brand-400'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
+              }`}
+            >
+              <span aria-hidden className="text-base leading-none">{icon}</span>
+              <span>{label}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
 
       {/* Page content */}
       <main className="flex-1">
