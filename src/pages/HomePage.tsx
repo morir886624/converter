@@ -14,6 +14,14 @@ const ALL_CATEGORIES = Object.keys(CATEGORY_LABEL) as ConversionCategory[];
 export function HomePage() {
   const [query, setQuery] = useState('');
   const [showTools, setShowTools] = useState(true);
+  const [openCats, setOpenCats] = useState<Set<ConversionCategory>>(new Set());
+
+  const toggleCat = (cat: ConversionCategory) =>
+    setOpenCats((prev) => {
+      const next = new Set(prev);
+      next.has(cat) ? next.delete(cat) : next.add(cat);
+      return next;
+    });
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -124,35 +132,54 @@ export function HomePage() {
         {ALL_CATEGORIES.map((cat) => {
           const items = grouped.get(cat) ?? [];
           if (items.length === 0) return null;
+          const isOpen = openCats.has(cat);
           return (
             <section key={cat}>
-              <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
-                <span aria-hidden>{CATEGORY_ICON_SEO[cat]}</span>
-                {CATEGORY_LABEL[cat]}
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {items.map((conv) => (
-                  <Link
-                    key={conv.slug}
-                    to={`/${conv.slug}`}
-                    className="group flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-brand-300 dark:hover:border-brand-600 hover:shadow-sm transition-all"
-                  >
-                    <span className="shrink-0 text-lg" aria-hidden>{CATEGORY_ICON_SEO[conv.category]}</span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-slate-800 dark:text-slate-100 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors truncate">
-                        {conv.from.toUpperCase()} → {conv.to.toUpperCase()}
-                      </p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 truncate leading-snug mt-0.5">
-                        {conv.title
-                          .replace(/^Convertir\s+/i, '')
-                          .replace(/\s+gratuitement$/i, '')
-                          .replace(/^Extraire le texte d'un\s+/i, '')}
-                      </p>
-                    </div>
-                    <span className="ml-auto shrink-0 text-slate-300 dark:text-slate-600 group-hover:text-brand-400 transition-colors text-sm" aria-hidden>›</span>
-                  </Link>
-                ))}
-              </div>
+              <button
+                onClick={() => toggleCat(cat)}
+                className="w-full flex items-center gap-2 mb-3 group"
+                aria-expanded={isOpen}
+              >
+                <span aria-hidden className="text-slate-400 dark:text-slate-500">{CATEGORY_ICON_SEO[cat]}</span>
+                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
+                  {CATEGORY_LABEL[cat]}
+                </span>
+                <span className="ml-1 text-[10px] text-slate-400 dark:text-slate-500">({items.length})</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className={`ml-auto w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : 'rotate-0'}`}
+                  aria-hidden
+                >
+                  <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06z" clipRule="evenodd" />
+                </svg>
+              </button>
+              {isOpen && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {items.map((conv) => (
+                    <Link
+                      key={conv.slug}
+                      to={`/${conv.slug}`}
+                      className="group flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-brand-300 dark:hover:border-brand-600 hover:shadow-sm transition-all"
+                    >
+                      <span className="shrink-0 text-lg" aria-hidden>{CATEGORY_ICON_SEO[conv.category]}</span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors truncate">
+                          {conv.from.toUpperCase()} → {conv.to.toUpperCase()}
+                        </p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 truncate leading-snug mt-0.5">
+                          {conv.title
+                            .replace(/^Convertir\s+/i, '')
+                            .replace(/\s+gratuitement$/i, '')
+                            .replace(/^Extraire le texte d'un\s+/i, '')}
+                        </p>
+                      </div>
+                      <span className="ml-auto shrink-0 text-slate-300 dark:text-slate-600 group-hover:text-brand-400 transition-colors text-sm" aria-hidden>›</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </section>
           );
         })}
