@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, Link, useLocation, useSearchParams } from 'react-router-dom';
 import type { AppTab } from '../pages/FullAppPage';
 import { useTheme } from '../hooks/useTheme';
@@ -19,6 +19,85 @@ const NAV_TOOLS: { id: AppTab; icon: string; label: string }[] = [
   { id: 'qr',        icon: '◼',   label: 'QR Code'     },
   { id: 'formatter', icon: '{ }', label: 'Formatter'   },
 ];
+
+function ToolsNav({ activeTab }: { activeTab: AppTab | null }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateArrows = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    updateArrows();
+    el.addEventListener('scroll', updateArrows, { passive: true });
+    const ro = new ResizeObserver(updateArrows);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('scroll', updateArrows);
+      ro.disconnect();
+    };
+  }, [updateArrows]);
+
+  const scroll = (dir: 'left' | 'right') =>
+    scrollRef.current?.scrollBy({ left: dir === 'left' ? -140 : 140, behavior: 'smooth' });
+
+  return (
+    <div className="relative border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+      {/* Left gradient + arrow */}
+      {canScrollLeft && (
+        <div className="absolute left-0 inset-y-0 w-10 z-10 flex items-center justify-start pl-1 bg-gradient-to-r from-white dark:from-slate-900 to-transparent pointer-events-none">
+          <button
+            onClick={() => scroll('left')}
+            aria-label="Scroll left"
+            className="pointer-events-auto w-6 h-6 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-base leading-none"
+          >
+            ‹
+          </button>
+        </div>
+      )}
+
+      {/* Scrollable list */}
+      <nav ref={scrollRef} aria-label="Tools" className="overflow-x-auto scrollbar-hide">
+        <div className="max-w-4xl mx-auto px-2 flex">
+          {NAV_TOOLS.map(({ id, icon, label }) => (
+            <Link
+              key={id}
+              to={`/app?tab=${id}`}
+              className={`flex flex-col items-center gap-0.5 px-3 py-2.5 text-[11px] font-medium whitespace-nowrap border-b-2 transition-colors ${
+                activeTab === id
+                  ? 'border-brand-500 text-brand-600 dark:text-brand-400'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
+              }`}
+            >
+              <span aria-hidden className="text-base leading-none">{icon}</span>
+              <span>{label}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
+
+      {/* Right gradient + arrow */}
+      {canScrollRight && (
+        <div className="absolute right-0 inset-y-0 w-10 z-10 flex items-center justify-end pr-1 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none">
+          <button
+            onClick={() => scroll('right')}
+            aria-label="Scroll right"
+            className="pointer-events-auto w-6 h-6 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-base leading-none"
+          >
+            ›
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function PwaBanners({
   offlineReady,
@@ -140,27 +219,7 @@ function Shell() {
       </header>
 
       {/* Tools nav */}
-      <nav
-        aria-label="Tools"
-        className="border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-x-auto scrollbar-hide"
-      >
-        <div className="max-w-4xl mx-auto px-2 flex">
-          {NAV_TOOLS.map(({ id, icon, label }) => (
-            <Link
-              key={id}
-              to={`/app?tab=${id}`}
-              className={`flex flex-col items-center gap-0.5 px-3 py-2.5 text-[11px] font-medium whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === id
-                  ? 'border-brand-500 text-brand-600 dark:text-brand-400'
-                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
-              }`}
-            >
-              <span aria-hidden className="text-base leading-none">{icon}</span>
-              <span>{label}</span>
-            </Link>
-          ))}
-        </div>
-      </nav>
+      <ToolsNav activeTab={activeTab} />
 
       {/* Page content */}
       <main className="flex-1">
