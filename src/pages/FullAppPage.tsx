@@ -139,19 +139,19 @@ export function FullAppPage() {
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-4">
       <Head>
-        <title>Full File Converter — File Converter App</title>
+        <title>Full File Converter — PDF, Image, Audio &amp; Video Tools</title>
         <meta
           name="description"
           content="Convert images, PDF, audio, video and data files directly in your browser. OCR, PDF tools, background removal, watermark — 100% local, no files uploaded."
         />
         <link rel="canonical" href={DOMAIN + '/app'} />
-        <meta property="og:title" content="Full File Converter — File Converter App" />
+        <meta property="og:title" content="Full File Converter — PDF, Image, Audio & Video Tools" />
         <meta property="og:description" content="Convert images, PDF, audio, video and data files directly in your browser. 100% local, no files ever uploaded." />
         <meta property="og:url" content={DOMAIN + '/app'} />
         <meta property="og:type" content="website" />
         <meta property="og:image" content={DOMAIN + '/apple-touch-icon.png'} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Full File Converter — File Converter App" />
+        <meta name="twitter:title" content="Full File Converter — PDF, Image, Audio & Video Tools" />
         <meta name="twitter:description" content="50+ conversions — images, PDF, audio, video, data. OCR, QR Code, Watermark, Favicon. 100% in your browser." />
         <meta name="twitter:image" content={DOMAIN + '/apple-touch-icon.png'} />
         <script type="application/ld+json">{JSON.stringify({

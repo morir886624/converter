@@ -14,7 +14,7 @@ const ALL_CATEGORIES = Object.keys(CATEGORY_LABEL) as ConversionCategory[];
 export function HomePage() {
   const [query, setQuery] = useState('');
   const [showTools, setShowTools] = useState(true);
-  const [openCats, setOpenCats] = useState<Set<ConversionCategory>>(new Set());
+  const [openCats, setOpenCats] = useState<Set<ConversionCategory>>(new Set(ALL_CATEGORIES));
 
   const toggleCat = (cat: ConversionCategory) =>
     setOpenCats((prev) => {
@@ -49,22 +49,22 @@ export function HomePage() {
   return (
     <>
       <Head>
-        <title>File Converter — Free Online File Converter</title>
+        <title>Free Online File Converter — Images, PDF, Audio, Video</title>
         <meta
           name="description"
           content="Convert your files for free directly in your browser. Images, PDF, audio, video, data — 100% local, no files ever sent to any server."
         />
         <link rel="canonical" href={DOMAIN + '/'} />
-        <meta property="og:title" content="File Converter — Free file conversion tool" />
+        <meta property="og:title" content="Free Online File Converter — Images, PDF, Audio, Video" />
         <meta
           property="og:description"
-          content="30+ conversions available: images, PDF, audio, video and data. Everything runs in your browser — no data collected, no uploads."
+          content="50+ conversions available: images, PDF, audio, video and data. Everything runs in your browser — no data collected, no uploads."
         />
         <meta property="og:url" content={DOMAIN + '/'} />
         <meta property="og:type" content="website" />
         <meta property="og:image" content={DOMAIN + '/apple-touch-icon.png'} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="File Converter — Free file conversion tool" />
+        <meta name="twitter:title" content="Free Online File Converter — Images, PDF, Audio, Video" />
         <meta name="twitter:description" content="50+ conversions: images, PDF, audio, video and data — 100% in your browser, no files uploaded." />
         <meta name="twitter:image" content={DOMAIN + '/apple-touch-icon.png'} />
         <meta name="google-site-verification" content="BVNEd-3B73VwzBLjp_kJgeOXXwEzifAgvu7eZ7rVv8I" />
@@ -74,6 +74,11 @@ export function HomePage() {
           name: 'File Converter',
           url: DOMAIN,
           description: 'Free online file converter — images, PDF, audio, video and data. All conversions happen in your browser, no files ever uploaded.',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: { '@type': 'EntryPoint', urlTemplate: `${DOMAIN}/?q={search_term_string}` },
+            'query-input': 'required name=search_term_string',
+          },
         })}</script>
         <script type="application/ld+json">{JSON.stringify({
           '@context': 'https://schema.org',
@@ -94,7 +99,7 @@ export function HomePage() {
           Convert your files <span className="text-brand-600 dark:text-brand-400">for free</span>
         </h1>
         <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed mb-6">
-          30+ conversions available — images, PDF, audio, video and data.
+          50+ conversions available — images, PDF, audio, video and data.
           Everything runs in your browser.{' '}
           <strong className="text-slate-800 dark:text-slate-200">No files ever leave your device.</strong>
         </p>
@@ -157,28 +162,29 @@ export function HomePage() {
           const isOpen = openCats.has(cat);
           return (
             <section key={cat}>
-              <button
-                onClick={() => toggleCat(cat)}
-                className="w-full flex items-center gap-2 mb-3 group"
-                aria-expanded={isOpen}
-              >
-                <span aria-hidden className="text-slate-400 dark:text-slate-500">{CATEGORY_ICON_SEO[cat]}</span>
-                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
-                  {CATEGORY_LABEL[cat]}
-                </span>
-                <span className="ml-1 text-[10px] text-slate-400 dark:text-slate-500">({items.length})</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className={`ml-auto w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : 'rotate-0'}`}
-                  aria-hidden
+              <h2 className="mb-3">
+                <button
+                  onClick={() => toggleCat(cat)}
+                  className="w-full flex items-center gap-2 group"
+                  aria-expanded={isOpen}
                 >
-                  <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06z" clipRule="evenodd" />
-                </svg>
-              </button>
-              {isOpen && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  <span aria-hidden className="text-slate-400 dark:text-slate-500">{CATEGORY_ICON_SEO[cat]}</span>
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
+                    {CATEGORY_LABEL[cat]}
+                  </span>
+                  <span className="ml-1 text-[10px] text-slate-400 dark:text-slate-500">({items.length})</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className={`ml-auto w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : 'rotate-0'}`}
+                    aria-hidden
+                  >
+                    <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </h2>
+              <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 ${isOpen ? '' : 'hidden'}`}>
                   {items.map((conv) => (
                     <Link
                       key={conv.slug}
@@ -201,7 +207,6 @@ export function HomePage() {
                     </Link>
                   ))}
                 </div>
-              )}
             </section>
           );
         })}
