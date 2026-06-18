@@ -14,7 +14,7 @@ const ALL_CATEGORIES = Object.keys(CATEGORY_LABEL) as ConversionCategory[];
 export function HomePage() {
   const [query, setQuery] = useState('');
   const [showTools, setShowTools] = useState(true);
-  const [openCats, setOpenCats] = useState<Set<ConversionCategory>>(new Set(ALL_CATEGORIES));
+  const [openCats, setOpenCats] = useState<Set<ConversionCategory>>(new Set());
 
   const toggleCat = (cat: ConversionCategory) =>
     setOpenCats((prev) => {
